@@ -1,5 +1,6 @@
 "use client";
 
+import Menu from "./components/Menu";
 import React, { useState, useEffect } from "react";
 
 export default function Home() {
@@ -142,7 +143,8 @@ const handleAdd = () => {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white flex flex-col items-center justify-center px-4 py-10">
-      <div className="w-full max-w-sm text-center">
+      <Menu />
+       <div className="w-full max-w-sm text-center">
         <h1 className="text-3xl font-bold mb-2 tracking-tight">
           Heiyu<span className="text-indigo-400">Budget</span>
         </h1>
