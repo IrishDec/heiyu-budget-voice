@@ -1,12 +1,12 @@
 "use client";
 
-
-import Menu from "./components/Menu";
 import React, { useState, useEffect } from "react";
-
-
+import Menu from "./components/Menu";
+import Link from "next/link";
 
 export default function Home() {
+  const STORAGE_KEY = "heiyu_budget_entries";
+
   const [text, setText] = useState("");
   const [listening, setListening] = useState(false);
   const [manualMode, setManualMode] = useState(false);
@@ -16,19 +16,22 @@ export default function Home() {
   const [notes, setNotes] = useState("");
   const [entries, setEntries] = useState<any[]>([]);
 
-  // 💾 Local storage persistence
+  // 🔄 Load + Save localStorage
   useEffect(() => {
-    const saved = localStorage.getItem("heiyu_budget_entries");
+    const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) setEntries(JSON.parse(saved));
   }, []);
+
   useEffect(() => {
-    localStorage.setItem("heiyu_budget_entries", JSON.stringify(entries));
+    if (entries.length > 0)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
   }, [entries]);
 
   // 🎙️ Voice recognition
   const handleMicClick = () => {
     const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Speech recognition not supported in this browser.");
       return;
@@ -46,93 +49,92 @@ export default function Home() {
 
       const lower = spokenText.toLowerCase();
       const typeGuess =
-        lower.includes("income") || lower.includes("earned") || lower.includes("received")
+        lower.includes("income") ||
+        lower.includes("earned") ||
+        lower.includes("received")
           ? "Income"
           : "Expense";
 
       const amountMatch = spokenText.match(/(\d+([.,]\d{1,2})?)/);
       const amount = amountMatch ? amountMatch[1].replace(",", ".") : null;
 
-     let category = "";
-if (amount) {
-  const words = spokenText.split(" ");
-  const amtIndex = words.findIndex((w) => w.includes(amount));
-  if (amtIndex !== -1 && words[amtIndex + 1]) {
-    category = words[amtIndex + 1];
-  }
-}
+      let category = "";
+      if (amount) {
+const words: string[] = spokenText.split(" ");
+const amtIndex = words.findIndex((w: string) => w.includes(amount));
 
-const entry = {
-  type: typeGuess,
-  text: spokenText,
-  amount,
-  category: category || "Uncategorized",
-  created_at: new Date().toLocaleString(),
-};
+        if (amtIndex !== -1 && words[amtIndex + 1]) {
+          category = words[amtIndex + 1];
+        }
+      }
 
+      const entry = {
+        type: typeGuess,
+        text: spokenText,
+        amount,
+        category: category || "Uncategorized",
+        created_at: new Date().toLocaleString(),
+      };
 
       setEntries((prev) => [entry, ...prev].slice(0, 50));
       alert(`🎙️ Saved ${entry.type}: "${spokenText}"`);
-       setText(""); // 
+      setText("");
     };
+
     recognition.onerror = (e: any) => {
       console.error("Speech error:", e.error);
       alert("Speech recognition error: " + e.error);
     };
     recognition.onend = () => setListening(false);
-
     recognition.start();
   };
 
-  // 💾 Manual Add
-const handleAdd = () => {
-  const fullText = `${entryType} ${
-    amount ? `€${amount}` : ""
-  } ${category || ""} ${notes || ""}`.trim();
+  // ✏️ Manual Add
+  const handleAdd = () => {
+    const fullText = `${entryType} ${
+      amount ? `€${amount}` : ""
+    } ${category || ""} ${notes || ""}`.trim();
 
-  if (!fullText) {
-    alert("Please enter or say something first!");
-    return;
-  }
+    if (!fullText) {
+      alert("Please enter or say something first!");
+      return;
+    }
 
-  const entry = {
-    type: entryType,
-    text: fullText,
-    amount: amount || null,
-    category: category || null,
-    notes: notes || null,
-    created_at: new Date().toISOString(),
+    const entry = {
+      type: entryType,
+      text: fullText,
+      amount: amount || null,
+      category: category || "Uncategorized",
+      notes: notes || null,
+      created_at: new Date().toLocaleString(),
+    };
 
+    setEntries((prev) => [entry, ...prev].slice(0, 50));
+    alert(`✅ Added ${entry.type}: "${entry.text}"`);
+    setText("");
+    setAmount("");
+    setCategory("");
+    setNotes("");
+    setManualMode(false);
   };
 
-  setEntries((prev) => [entry, ...prev].slice(0, 50));
-  alert(`✅ Added ${entry.type}: "${entry.text}"`);
-  setText("");
-  setAmount("");
-  setCategory("");
-  setNotes("");
-  setManualMode(false);
-};
-
-
+  // 🧹 Clear Entries
   const handleClear = () => {
     if (confirm("Clear all entries?")) {
       setEntries([]);
-      localStorage.removeItem("heiyu_budget_entries");
+      localStorage.removeItem(STORAGE_KEY);
     }
   };
-    // 📊 Totals logic for Income & Expense
+
+  // 📊 Totals logic
   const now = new Date();
-
   const isSameDay = (d1: Date, d2: Date) => d1.toDateString() === d2.toDateString();
-
   const isSameWeek = (d1: Date, d2: Date) => {
     const oneJan = new Date(d1.getFullYear(), 0, 1);
     const week1 = Math.ceil(((+d1 - +oneJan) / 86400000 + oneJan.getDay() + 1) / 7);
     const week2 = Math.ceil(((+d2 - +oneJan) / 86400000 + oneJan.getDay() + 1) / 7);
     return d1.getFullYear() === d2.getFullYear() && week1 === week2;
   };
-
   const isSameMonth = (d1: Date, d2: Date) =>
     d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth();
 
@@ -151,21 +153,20 @@ const handleAdd = () => {
     return { today, week, month };
   };
 
-  
   const incomeTotals = getTotals("Income");
   const expenseTotals = getTotals("Expense");
 
-
+  // 🖼️ UI
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white flex flex-col items-center justify-center px-4 py-10">
       <Menu />
-       <div className="w-full max-w-sm text-center">
+      <div className="w-full max-w-sm text-center">
         <h1 className="text-3xl font-bold mb-2 tracking-tight">
           Heiyu<span className="text-indigo-400">Budget</span>
         </h1>
         <p className="text-gray-400 text-sm mb-8">Fast voice or text budgeting.</p>
 
-        {/* 🎤 Mic button */}
+        {/* 🎤 Mic */}
         <button
           onClick={handleMicClick}
           className={`relative w-full py-4 text-lg font-semibold rounded-full text-white shadow-lg mb-4 transition-all duration-300 ${
@@ -187,11 +188,10 @@ const handleAdd = () => {
           </button>
         )}
 
-        {/* ✏️ Manual form */}
+        {/* 📝 Manual Form */}
         {manualMode && (
           <div className="bg-gray-800/60 p-5 mt-5 rounded-2xl shadow-xl border border-gray-700 backdrop-blur-md text-left">
             <h3 className="text-lg font-semibold mb-3 text-indigo-300">Add Entry</h3>
-
             <select
               value={entryType}
               onChange={(e) => setEntryType(e.target.value as "Expense" | "Income")}
@@ -200,7 +200,6 @@ const handleAdd = () => {
               <option>Expense</option>
               <option>Income</option>
             </select>
-
             <input
               type="number"
               step="0.01"
@@ -209,7 +208,6 @@ const handleAdd = () => {
               onChange={(e) => setAmount(e.target.value)}
               className="w-full p-3 mb-3 rounded-lg bg-gray-700 text-white outline-none focus:ring-2 focus:ring-indigo-400"
             />
-
             <input
               type="text"
               placeholder="Category"
@@ -217,7 +215,6 @@ const handleAdd = () => {
               onChange={(e) => setCategory(e.target.value)}
               className="w-full p-3 mb-3 rounded-lg bg-gray-700 text-white outline-none focus:ring-2 focus:ring-indigo-400"
             />
-
             <input
               type="text"
               placeholder="Notes (optional)"
@@ -225,7 +222,6 @@ const handleAdd = () => {
               onChange={(e) => setNotes(e.target.value)}
               className="w-full p-3 mb-4 rounded-lg bg-gray-700 text-white outline-none focus:ring-2 focus:ring-indigo-400"
             />
-
             <button
               onClick={handleAdd}
               className="w-full bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500 py-3 rounded-full font-semibold text-white shadow-md hover:brightness-110 transition"
@@ -235,7 +231,7 @@ const handleAdd = () => {
           </div>
         )}
 
-      {/* 🧾 Recent Entries */}
+        {/* 🧾 Recent Entries */}
         {entries.length > 0 && (
           <div className="bg-gray-800/60 p-5 mt-8 rounded-2xl shadow-lg border border-gray-700 backdrop-blur-md text-left">
             <div className="flex items-center justify-between mb-3">
@@ -256,7 +252,9 @@ const handleAdd = () => {
                   {e.amount && (
                     <p
                       className={`text-sm ${
-                        e.type === "Income" ? "text-emerald-400" : "text-pink-400"
+                        e.type === "Income"
+                          ? "text-emerald-400"
+                          : "text-pink-400"
                       }`}
                     >
                       €{parseFloat(e.amount).toFixed(2)}
@@ -268,27 +266,24 @@ const handleAdd = () => {
             </ul>
           </div>
         )}
-  {/* 💵 Totals Summary */}
-        <div className="bg-gray-800/60 p-5 mt-6 rounded-2xl shadow-lg border border-gray-700 backdrop-blur-md text-center">
-          <h3 className="text-lg font-semibold text-indigo-300 mb-4">Totals Summary</h3>
 
-          {/* Header Row */}
+        {/* 💵 Totals */}
+        <div className="bg-gray-800/60 p-5 mt-6 rounded-2xl shadow-lg border border-gray-700 backdrop-blur-md text-center">
+          <h3 className="text-lg font-semibold text-indigo-300 mb-4">
+            Totals Summary
+          </h3>
           <div className="grid grid-cols-4 text-sm font-semibold text-gray-300 mb-3">
             <div></div>
             <div>Today</div>
             <div>Week</div>
             <div>Month</div>
           </div>
-
-          {/* Income Row */}
           <div className="grid grid-cols-4 text-sm items-center mb-2">
             <div className="font-medium text-emerald-400">Income</div>
             <div>€{incomeTotals.today.toFixed(2)}</div>
             <div>€{incomeTotals.week.toFixed(2)}</div>
             <div>€{incomeTotals.month.toFixed(2)}</div>
           </div>
-
-          {/* Expense Row */}
           <div className="grid grid-cols-4 text-sm items-center">
             <div className="font-medium text-pink-400">Expense</div>
             <div>€{expenseTotals.today.toFixed(2)}</div>
@@ -296,8 +291,15 @@ const handleAdd = () => {
             <div>€{expenseTotals.month.toFixed(2)}</div>
           </div>
         </div>
+
+        {/* 📈 Link to Data Tables */}
+        <Link
+          href="/data-tables"
+          className="block text-indigo-400 hover:text-indigo-300 text-sm mt-6 transition"
+        >
+          📊 View Data Tables
+        </Link>
       </div>
     </main>
   );
 }
-  
