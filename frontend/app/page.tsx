@@ -138,20 +138,40 @@ const amtIndex = words.findIndex((w: string) => w.includes(amount));
   const isSameMonth = (d1: Date, d2: Date) =>
     d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth();
 
-  const getTotals = (type: "Income" | "Expense") => {
-    let today = 0,
-      week = 0,
-      month = 0;
-    entries.forEach((e) => {
-      if (e.type !== type || !e.amount) return;
-      const entryDate = new Date(e.created_at);
-      const amt = parseFloat(e.amount);
-      if (isSameDay(now, entryDate)) today += amt;
-      if (isSameWeek(now, entryDate)) week += amt;
-      if (isSameMonth(now, entryDate)) month += amt;
-    });
-    return { today, week, month };
-  };
+const getTotals = (type: "Income" | "Expense") => {
+  let today = 0, week = 0, month = 0;
+
+  entries.forEach((e) => {
+    if (e.type !== type || !e.amount) return;
+
+    // 🕒 Fix for inconsistent date format
+    let entryDate;
+    try {
+      // Handle both ISO and locale strings safely
+      entryDate = new Date(e.created_at);
+      if (isNaN(entryDate.getTime())) {
+        const parts = e.created_at.split(/[\/\-,:\s]/);
+        if (parts.length >= 3) {
+          entryDate = new Date(
+            parseInt(parts[2]),
+            parseInt(parts[1]) - 1,
+            parseInt(parts[0])
+          );
+        }
+      }
+    } catch {
+      entryDate = new Date();
+    }
+
+    const amt = parseFloat(e.amount);
+    if (isSameDay(now, entryDate)) today += amt;
+    if (isSameWeek(now, entryDate)) week += amt;
+    if (isSameMonth(now, entryDate)) month += amt;
+  });
+
+  return { today, week, month };
+};
+
 
   const incomeTotals = getTotals("Income");
   const expenseTotals = getTotals("Expense");
