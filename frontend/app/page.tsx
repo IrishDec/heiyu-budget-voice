@@ -1,7 +1,10 @@
 "use client";
 
+
 import Menu from "./components/Menu";
 import React, { useState, useEffect } from "react";
+
+
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -137,6 +140,7 @@ const handleAdd = () => {
     return { today, week, month };
   };
 
+  
   const incomeTotals = getTotals("Income");
   const expenseTotals = getTotals("Expense");
 
@@ -285,3 +289,4 @@ const handleAdd = () => {
     </main>
   );
 }
+  
