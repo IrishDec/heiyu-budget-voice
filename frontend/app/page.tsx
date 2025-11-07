@@ -78,7 +78,8 @@ const handleMicClick = () => {
 
     // 🧠 Improved category detection — gets the word *after* the amount
     const words = spokenText.split(/\s+/);
-    const amtIndex = amountMatch ? words.findIndex((w) => w.match(/\d/)) : -1;
+    const amtIndex = amountMatch ? words.findIndex((w: string) => w.match(/\d/)) : -1;
+
 
     let cat = "Uncategorized";
     if (amtIndex !== -1 && words[amtIndex + 1]) {
