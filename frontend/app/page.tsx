@@ -52,62 +52,70 @@ export default function Home() {
   }, [entries]);
 
 
-  // 🎙️ Voice
-  const handleMicClick = () => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Speech recognition not supported in this browser.");
+ // 🎙️ Voice
+const handleMicClick = () => {
+  const SpeechRecognition =
+    (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("Speech recognition not supported in this browser.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+
+  recognition.onstart = () => setListening(true);
+  recognition.onresult = (event: any) => {
+    const spokenText = event.results[0][0].transcript.trim();
+    setText(spokenText);
+
+    const lower = spokenText.toLowerCase();
+    const type: EntryType = lower.includes("income") ? "Income" : "Expense";
+
+    const amountMatch = spokenText.match(/(\d+([.,]\d{1,2})?)/);
+    const rawAmount = amountMatch ? amountMatch[1] : "";
+    const parsedAmount = rawAmount.replace(",", ".");
+
+    // 🧠 Improved category detection
+    const words = spokenText.split(/\s+/);
+    const amtIndex = rawAmount
+      ? words.findIndex((w: string) => w.replace(/[^0-9.,]/g, "") === rawAmount)
+      : -1;
+
+    let cat = "Uncategorized";
+    if (amtIndex !== -1) {
+      const nextWord = words[amtIndex + 1];
+      if (
+        nextWord &&
+        !["income", "expense", "euro", "€"].includes(nextWord.toLowerCase())
+      ) {
+        cat = nextWord;
+      }
+    }
+
+    if (!parsedAmount) {
+      alert("Couldn't detect an amount. Try again.");
       return;
     }
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
-
-    recognition.onstart = () => setListening(true);
-    recognition.onresult = (event: any) => {
-      const spokenText = event.results[0][0].transcript.trim();
-      setText(spokenText);
-
-      const lower = spokenText.toLowerCase();
-      const type: EntryType = lower.includes("income") ? "Income" : "Expense";
-
-      const amountMatch = spokenText.match(/(\d+([.,]\d{1,2})?)/);
-      const rawAmount = amountMatch ? amountMatch[1] : "";
-      const parsedAmount = rawAmount.replace(",", ".");
-
-      // category = word after the amount
-      const words = spokenText.split(/\s+/);
-      const amtIndex = rawAmount
-        ? words.findIndex((w: string) => w.includes(rawAmount))
-        : -1;
-      const cat =
-        amtIndex !== -1 && words[amtIndex + 1]
-          ? words[amtIndex + 1]
-          : "Uncategorized";
-
-      if (!parsedAmount) {
-        alert("Couldn't detect an amount. Try again.");
-        return;
-      }
-
-      const entry: Entry = {
-        type,
-        amount: parsedAmount,
-        category: cat,
-        text: spokenText,
-        created_at: new Date().toISOString(),
-      };
-
-      setEntries((prev) => [entry, ...prev].slice(0, 50));
-      setText("");
+    const entry: Entry = {
+      type,
+      amount: parsedAmount,
+      category: cat,
+      text: spokenText,
+      created_at: new Date().toISOString(),
     };
 
-    recognition.onerror = () => setListening(false);
-    recognition.onend = () => setListening(false);
-    recognition.start();
+    setEntries((prev) => [entry, ...prev].slice(0, 50));
+    setText("");
   };
+
+  recognition.onerror = () => setListening(false);
+  recognition.onend = () => setListening(false);
+  recognition.start();
+};
+
 
   // ✏️ Manual Add
   const handleAdd = () => {
@@ -305,14 +313,6 @@ export default function Home() {
             <div>€{expenseTotals.month.toFixed(2)}</div>
           </div>
         </div>
-
-        {/* Single link to tables */}
-        <Link
-          href="/data-tables"
-          className="block text-indigo-400 hover:text-indigo-300 mt-4 text-sm"
-        >
-          📊 View Data Tables
-        </Link>
       </div>
     </main>
   );
