@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 
-
 export default function Home() {
   const [text, setText] = useState("");
   const [listening, setListening] = useState(false);
@@ -13,21 +12,16 @@ export default function Home() {
   const [notes, setNotes] = useState("");
   const [entries, setEntries] = useState<any[]>([]);
 
-  // 🧠 Load saved entries on startup
-useEffect(() => {
-  const saved = localStorage.getItem("heiyu-entries");
-  if (saved) {
-    setEntries(JSON.parse(saved));
-  }
-}, []);
+  // 💾 Local storage persistence
+  useEffect(() => {
+    const saved = localStorage.getItem("heiyu_budget_entries");
+    if (saved) setEntries(JSON.parse(saved));
+  }, []);
+  useEffect(() => {
+    localStorage.setItem("heiyu_budget_entries", JSON.stringify(entries));
+  }, [entries]);
 
-// 💾 Save entries every time they change
-useEffect(() => {
-  localStorage.setItem("heiyu-entries", JSON.stringify(entries));
-}, [entries]);
-
-
-  // 🎙️ Speech recognition
+  // 🎙️ Voice recognition
   const handleMicClick = () => {
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -43,17 +37,28 @@ useEffect(() => {
 
     recognition.onstart = () => setListening(true);
     recognition.onresult = (event: any) => {
-      const spokenText = event.results[0][0].transcript;
-      console.log("🗣️ Heard:", spokenText);
+      const spokenText = event.results[0][0].transcript.trim();
       setText(spokenText);
 
-      // basic guess: if it contains "income" or "earned" → income, else expense
       const lower = spokenText.toLowerCase();
       const typeGuess =
         lower.includes("income") || lower.includes("earned") || lower.includes("received")
           ? "Income"
           : "Expense";
-      setEntryType(typeGuess as "Expense" | "Income");
+
+      const amountMatch = spokenText.match(/(\d+([.,]\d{1,2})?)/);
+      const amount = amountMatch ? amountMatch[1].replace(",", ".") : null;
+
+      const entry = {
+        type: typeGuess,
+        text: spokenText,
+        amount,
+         created_at: new Date().toISOString(),
+      };
+
+      setEntries((prev) => [entry, ...prev].slice(0, 50));
+      alert(`🎙️ Saved ${entry.type}: "${spokenText}"`);
+       setText(""); // 
     };
     recognition.onerror = (e: any) => {
       console.error("Speech error:", e.error);
@@ -64,45 +69,29 @@ useEffect(() => {
     recognition.start();
   };
 
-// 💾 Save handler (for both voice + manual)
+  // 💾 Manual Add
 const handleAdd = () => {
-  // Merge text + manual fields before parsing
-  const combinedText = text || `${entryType} ${amount} ${category} ${notes}`.trim();
-  const lower = combinedText.toLowerCase();
+  const fullText = `${entryType} ${
+    amount ? `€${amount}` : ""
+  } ${category || ""} ${notes || ""}`.trim();
 
-  // Detect type (income vs expense)
-  const type =
-    lower.includes("income") || lower.includes("earned") || lower.includes("received")
-      ? "Income"
-      : "Expense";
-
-  // Detect numeric amount
-  const numberMatch = lower.match(/(\d+(\.\d+)?)/);
-  const parsedAmount = numberMatch ? numberMatch[0] : amount || null;
-
-  // Detect category (after the number)
-  const words = lower.split(" ");
-  const numberIndex = words.findIndex((w) => w.match(/(\d+(\.\d+)?)/));
-  let parsedCategory = category;
-  if (!parsedCategory && numberIndex !== -1 && words[numberIndex + 1]) {
-    parsedCategory = words.slice(numberIndex + 1).join(" ");
+  if (!fullText) {
+    alert("Please enter or say something first!");
+    return;
   }
 
   const entry = {
-    type,
-    text: combinedText,
-    amount: parsedAmount || "—",
-    category: parsedCategory || "—",
+    type: entryType,
+    text: fullText,
+    amount: amount || null,
+    category: category || null,
     notes: notes || null,
-    created_at: new Date().toLocaleString(),
+    created_at: new Date().toISOString(),
+
   };
 
-  console.log("💾 Added to budget:", entry);
-  alert(`Added ${entry.type}: ${entry.category} (€${entry.amount})`);
-
-  setEntries((prev) => [entry, ...prev].slice(0, 5));
-
-  // Reset everything
+  setEntries((prev) => [entry, ...prev].slice(0, 50));
+  alert(`✅ Added ${entry.type}: "${entry.text}"`);
   setText("");
   setAmount("");
   setCategory("");
@@ -111,118 +100,186 @@ const handleAdd = () => {
 };
 
 
+  const handleClear = () => {
+    if (confirm("Clear all entries?")) {
+      setEntries([]);
+      localStorage.removeItem("heiyu_budget_entries");
+    }
+  };
+    // 📊 Totals logic for Income & Expense
+  const now = new Date();
+
+  const isSameDay = (d1: Date, d2: Date) => d1.toDateString() === d2.toDateString();
+
+  const isSameWeek = (d1: Date, d2: Date) => {
+    const oneJan = new Date(d1.getFullYear(), 0, 1);
+    const week1 = Math.ceil(((+d1 - +oneJan) / 86400000 + oneJan.getDay() + 1) / 7);
+    const week2 = Math.ceil(((+d2 - +oneJan) / 86400000 + oneJan.getDay() + 1) / 7);
+    return d1.getFullYear() === d2.getFullYear() && week1 === week2;
+  };
+
+  const isSameMonth = (d1: Date, d2: Date) =>
+    d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth();
+
+  const getTotals = (type: "Income" | "Expense") => {
+    let today = 0,
+      week = 0,
+      month = 0;
+    entries.forEach((e) => {
+      if (e.type !== type || !e.amount) return;
+      const entryDate = new Date(e.created_at);
+      const amt = parseFloat(e.amount);
+      if (isSameDay(now, entryDate)) today += amt;
+      if (isSameWeek(now, entryDate)) week += amt;
+      if (isSameMonth(now, entryDate)) month += amt;
+    });
+    return { today, week, month };
+  };
+
+  const incomeTotals = getTotals("Income");
+  const expenseTotals = getTotals("Expense");
+
+
   return (
-    <main className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-8">
-      <h1 className="text-3xl font-bold mb-6">Heiyu Budget Voice</h1>
+    <main className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white flex flex-col items-center justify-center px-4 py-10">
+      <div className="w-full max-w-sm text-center">
+        <h1 className="text-3xl font-bold mb-2 tracking-tight">
+          Heiyu<span className="text-indigo-400">Budget</span>
+        </h1>
+        <p className="text-gray-400 text-sm mb-8">Fast voice or text budgeting.</p>
 
-      {/* 🎤 Voice input */}
-      <button
-        className={`${
-          listening ? "bg-red-500" : "bg-blue-500 hover:bg-blue-600"
-        } text-white py-3 px-6 rounded-full text-lg mb-4`}
-        onClick={handleMicClick}
-      >
-        {listening ? "🎙️ Listening..." : "🎤 Tap to Speak"}
-      </button>
-
-      {/* 🗒️ Spoken or typed entry */}
-      {text && (
-        <div className="bg-gray-800 w-full max-w-md p-4 rounded-lg mb-4">
-          <h3 className="text-lg font-semibold mb-2">Captured {entryType}</h3>
-          <p className="text-gray-200">{text}</p>
-        </div>
-      )}
-
-      {/* 💾 Save directly (from voice) */}
-      {text && !manualMode && (
+        {/* 🎤 Mic button */}
         <button
-          className="bg-green-500 hover:bg-green-600 text-white py-2 px-5 rounded-lg mb-4"
-          onClick={handleAdd}
+          onClick={handleMicClick}
+          className={`relative w-full py-4 text-lg font-semibold rounded-full text-white shadow-lg mb-4 transition-all duration-300 ${
+            listening
+              ? "bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 animate-pulse"
+              : "bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500 hover:brightness-110"
+          }`}
         >
-          💾 Save Voice Entry
+          {listening ? "🎙️ Listening..." : "🎤 Tap to Speak"}
         </button>
-      )}
 
-      {/* ✏️ Switch to manual form */}
-      {!manualMode && (
-        <button
-          className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-5 rounded-lg mb-4"
-          onClick={() => setManualMode(true)}
-        >
-          ✏️ Add Manually
-        </button>
-      )}
-
-      {/* 🧾 Manual form */}
-      {manualMode && (
-        <div className="bg-gray-800 p-4 rounded-lg w-full max-w-md mb-4">
-          <label className="block mb-2 text-sm text-gray-300">Type</label>
-          <select
-            className="w-full p-2 rounded text-black mb-3"
-            value={entryType}
-            onChange={(e) => setEntryType(e.target.value as "Expense" | "Income")}
-          >
-            <option>Expense</option>
-            <option>Income</option>
-          </select>
-
-          <label className="block mb-2 text-sm text-gray-300">Amount (€)</label>
-          <input
-            type="number"
-            step="0.01"
-            placeholder="12.40"
-            className="w-full p-2 rounded text-black mb-3"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-
-          <label className="block mb-2 text-sm text-gray-300">Category</label>
-          <input
-            type="text"
-            placeholder="Fuel, Coffee, etc."
-            className="w-full p-2 rounded text-black mb-3"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          />
-
-          <label className="block mb-2 text-sm text-gray-300">Notes</label>
-          <input
-            type="text"
-            placeholder="Optional details..."
-            className="w-full p-2 rounded text-black mb-3"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-
+        {/* ✏️ Add by Text */}
+        {!manualMode && (
           <button
-            className="bg-green-500 hover:bg-green-600 text-white py-2 px-5 rounded-lg mt-2"
-            onClick={handleAdd}
+            onClick={() => setManualMode(true)}
+            className="w-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 text-white py-3 rounded-full font-medium shadow-md hover:brightness-110 transition"
           >
-            ➕ Add to Budget
+            ✏️ Add by Text
           </button>
-        </div>
-      )}
+        )}
 
-         <p className="mt-4 text-gray-400 text-center">
-        Tap and speak naturally — or add manually when needed.
-      </p>
+        {/* ✏️ Manual form */}
+        {manualMode && (
+          <div className="bg-gray-800/60 p-5 mt-5 rounded-2xl shadow-xl border border-gray-700 backdrop-blur-md text-left">
+            <h3 className="text-lg font-semibold mb-3 text-indigo-300">Add Entry</h3>
+
+            <select
+              value={entryType}
+              onChange={(e) => setEntryType(e.target.value as "Expense" | "Income")}
+              className="w-full p-3 mb-3 rounded-lg bg-gray-700 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+            >
+              <option>Expense</option>
+              <option>Income</option>
+            </select>
+
+            <input
+              type="number"
+              step="0.01"
+              placeholder="Amount (€)"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full p-3 mb-3 rounded-lg bg-gray-700 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+
+            <input
+              type="text"
+              placeholder="Category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full p-3 mb-3 rounded-lg bg-gray-700 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+
+            <input
+              type="text"
+              placeholder="Notes (optional)"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full p-3 mb-4 rounded-lg bg-gray-700 text-white outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+
+            <button
+              onClick={handleAdd}
+              className="w-full bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500 py-3 rounded-full font-semibold text-white shadow-md hover:brightness-110 transition"
+            >
+              💾 Save Entry
+            </button>
+          </div>
+        )}
 
       {/* 🧾 Recent Entries */}
-      {entries.length > 0 && (
-        <div className="w-full max-w-md bg-gray-800 mt-6 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-3">Recent Entries</h3>
-          <ul>
-            {entries.map((e, i) => (
-              <li key={i} className="border-b border-gray-700 py-2">
-                <p className="text-sm text-gray-300">
-                  <strong>{e.type}</strong>: {e.text || e.category || "—"}
-                </p>
-                <p className="text-xs text-gray-500">{e.created_at}</p>
-              </li>
-            ))}
-          </ul>
+        {entries.length > 0 && (
+          <div className="bg-gray-800/60 p-5 mt-8 rounded-2xl shadow-lg border border-gray-700 backdrop-blur-md text-left">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold text-indigo-300">Recent Entries</h3>
+              <button
+                onClick={handleClear}
+                className="text-xs text-gray-400 hover:text-red-400 transition"
+              >
+                Clear
+              </button>
+            </div>
+            <ul className="max-h-40 overflow-y-auto">
+              {entries.map((e, i) => (
+                <li key={i} className="border-b border-gray-700 py-2">
+                  <p className="text-sm text-gray-200">
+                    <strong>{e.type}:</strong> {e.text}
+                  </p>
+                  {e.amount && (
+                    <p
+                      className={`text-sm ${
+                        e.type === "Income" ? "text-emerald-400" : "text-pink-400"
+                      }`}
+                    >
+                      €{parseFloat(e.amount).toFixed(2)}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500">{e.created_at}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+  {/* 💵 Totals Summary */}
+        <div className="bg-gray-800/60 p-5 mt-6 rounded-2xl shadow-lg border border-gray-700 backdrop-blur-md text-center">
+          <h3 className="text-lg font-semibold text-indigo-300 mb-4">Totals Summary</h3>
+
+          {/* Header Row */}
+          <div className="grid grid-cols-4 text-sm font-semibold text-gray-300 mb-3">
+            <div></div>
+            <div>Today</div>
+            <div>Week</div>
+            <div>Month</div>
+          </div>
+
+          {/* Income Row */}
+          <div className="grid grid-cols-4 text-sm items-center mb-2">
+            <div className="font-medium text-emerald-400">Income</div>
+            <div>€{incomeTotals.today.toFixed(2)}</div>
+            <div>€{incomeTotals.week.toFixed(2)}</div>
+            <div>€{incomeTotals.month.toFixed(2)}</div>
+          </div>
+
+          {/* Expense Row */}
+          <div className="grid grid-cols-4 text-sm items-center">
+            <div className="font-medium text-pink-400">Expense</div>
+            <div>€{expenseTotals.today.toFixed(2)}</div>
+            <div>€{expenseTotals.week.toFixed(2)}</div>
+            <div>€{expenseTotals.month.toFixed(2)}</div>
+          </div>
         </div>
-      )}
+      </div>
     </main>
   );
 }
