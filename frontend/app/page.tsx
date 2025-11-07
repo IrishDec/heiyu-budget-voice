@@ -51,8 +51,7 @@ export default function Home() {
     }
   }, [entries]);
 
-
- // 🎙️ Voice
+// 🎙️ Voice
 const handleMicClick = () => {
   const SpeechRecognition =
     (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -77,18 +76,18 @@ const handleMicClick = () => {
     const rawAmount = amountMatch ? amountMatch[1] : "";
     const parsedAmount = rawAmount.replace(",", ".");
 
-    // 🧠 Improved category detection
+    // 🧠 Improved category detection — gets the word *after* the amount
     const words = spokenText.split(/\s+/);
-    const amtIndex = rawAmount
-      ? words.findIndex((w: string) => w.replace(/[^0-9.,]/g, "") === rawAmount)
-      : -1;
+    const amtIndex = amountMatch ? words.findIndex((w) => w.match(/\d/)) : -1;
 
     let cat = "Uncategorized";
-    if (amtIndex !== -1) {
-      const nextWord = words[amtIndex + 1];
+    if (amtIndex !== -1 && words[amtIndex + 1]) {
+      const nextWord = words[amtIndex + 1].replace(/[^a-zA-Z]/g, "");
       if (
         nextWord &&
-        !["income", "expense", "euro", "€"].includes(nextWord.toLowerCase())
+        !["income", "expense", "euro", "euros", "€"].includes(
+          nextWord.toLowerCase()
+        )
       ) {
         cat = nextWord;
       }
@@ -115,7 +114,6 @@ const handleMicClick = () => {
   recognition.onend = () => setListening(false);
   recognition.start();
 };
-
 
   // ✏️ Manual Add
   const handleAdd = () => {
