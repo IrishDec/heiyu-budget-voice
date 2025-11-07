@@ -1,13 +1,24 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import DataTables from "../components/DataTables";
 import Menu from "../components/Menu";
+import DataTables from "../components/DataTables";
 
 export default function DataTablesPage() {
-  const saved = localStorage.getItem("heiyu_budget_entries");
-  const entries = saved ? JSON.parse(saved) : [];
+  const [entries, setEntries] = useState<any[]>([]);
+
+  useEffect(() => {
+    // ✅ Only run in the browser
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("heiyu_budget_entries");
+        if (saved) setEntries(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load entries:", e);
+      }
+    }
+  }, []);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white px-4 py-10">
@@ -25,4 +36,3 @@ export default function DataTablesPage() {
     </main>
   );
 }
-
