@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Menu from "./components/Menu";
-import Link from "next/link";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -226,10 +225,6 @@ export default function Home() {
             <div>€{expenseTotals.month.toFixed(2)}</div>
           </div>
         </div>
-
-        <Link href="/data-tables" className="block text-indigo-400 hover:text-indigo-300 mt-4 text-sm">
-          📊 View Data Tables
-        </Link>
       </div>
     </main>
   );
