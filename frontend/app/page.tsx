@@ -53,12 +53,23 @@ export default function Home() {
       const amountMatch = spokenText.match(/(\d+([.,]\d{1,2})?)/);
       const amount = amountMatch ? amountMatch[1].replace(",", ".") : null;
 
-      const entry = {
-        type: typeGuess,
-        text: spokenText,
-        amount,
-         created_at: new Date().toISOString(),
-      };
+     let category = "";
+if (amount) {
+  const words = spokenText.split(" ");
+  const amtIndex = words.findIndex((w) => w.includes(amount));
+  if (amtIndex !== -1 && words[amtIndex + 1]) {
+    category = words[amtIndex + 1];
+  }
+}
+
+const entry = {
+  type: typeGuess,
+  text: spokenText,
+  amount,
+  category: category || "Uncategorized",
+  created_at: new Date().toLocaleString(),
+};
+
 
       setEntries((prev) => [entry, ...prev].slice(0, 50));
       alert(`🎙️ Saved ${entry.type}: "${spokenText}"`);
