@@ -67,14 +67,14 @@ const amtIndex = words.findIndex((w: string) => w.includes(amount));
           category = words[amtIndex + 1];
         }
       }
+const entry = {
+  type: typeGuess,
+  text: spokenText,
+  amount,
+  category: category || "Uncategorized",
+  created_at: new Date().toISOString(), // ← ISO always
+};
 
-      const entry = {
-        type: typeGuess,
-        text: spokenText,
-        amount,
-        category: category || "Uncategorized",
-        created_at: new Date().toLocaleString(),
-      };
 
       setEntries((prev) => [entry, ...prev].slice(0, 50));
       alert(`🎙️ Saved ${entry.type}: "${spokenText}"`);
