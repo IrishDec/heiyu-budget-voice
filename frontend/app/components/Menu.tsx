@@ -55,19 +55,13 @@ export default function Menu() {
             📊 Dashboard
           </Link>
 
-          <button
-            className="block w-full text-left text-gray-300 hover:text-indigo-300 transition"
+          <Link
+            href="/tables"
+            className="block text-gray-300 hover:text-indigo-300 transition"
             onClick={() => setOpen(false)}
           >
-            💰 Income Table (coming soon)
-          </button>
-
-          <button
-            className="block w-full text-left text-gray-300 hover:text-indigo-300 transition"
-            onClick={() => setOpen(false)}
-          >
-            💸 Expense Table (coming soon)
-          </button>
+            💰 Data Tables
+          </Link>
 
           <button
             className="block w-full text-left text-gray-400 hover:text-indigo-200 transition mt-4 text-xs"
