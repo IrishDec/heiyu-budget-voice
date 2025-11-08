@@ -31,18 +31,20 @@ export default function Home() {
   const [notes, setNotes] = useState("");
   const [entries, setEntries] = useState<Entry[]>([]);
 
-  // ✅ Load entries
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  // ✅ Load entries (synchronously)
+useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  try {
     const saved = localStorage.getItem("heiyu_budget_entries");
-    if (!saved) return;
-    try {
+    if (saved) {
       const parsed: Entry[] = JSON.parse(saved);
-      Promise.resolve().then(() => setEntries(parsed));
-    } catch (err) {
-      console.error("Error parsing saved entries:", err);
+      setEntries(parsed); // Directly load on mount
     }
-  }, []);
+  } catch (err) {
+    console.error("Error loading entries:", err);
+  }
+}, []);
 
   // ✅ Save entries
   useEffect(() => {
@@ -88,23 +90,26 @@ const handleMicClick = () => {
     const rawAmount = amountMatch ? amountMatch[1] : "";
     const parsedAmount = rawAmount.replace(",", ".");
 
-    const words = spokenText.split(/\s+/);
-    const amtIndex = words.findIndex(
-      (w) => w.replace(/[^0-9.,]/g, "") === rawAmount
+const words = spokenText.split(/\s+/);
+const amtIndex = words.findIndex(
+  (w) => w.replace(/[^0-9.,]/g, "") === rawAmount
+);
+
+let cat = "Uncategorized";
+if (amtIndex !== -1) {
+  const nextTwo = words.slice(amtIndex + 1, amtIndex + 3)
+    .map((w) => w.replace(/[^a-zA-Z]/g, ""))
+    .filter(
+      (w) =>
+        w &&
+        !["income", "expense", "euro", "euros", "€"].includes(w.toLowerCase())
     );
 
-    let cat = "Uncategorized";
-    if (amtIndex !== -1 && words[amtIndex + 1]) {
-      const nextWord = words[amtIndex + 1].replace(/[^a-zA-Z]/g, "");
-      if (
-        nextWord &&
-        !["income", "expense", "euro", "euros", "€"].includes(
-          nextWord.toLowerCase()
-        )
-      ) {
-        cat = nextWord;
-      }
-    }
+  if (nextTwo.length > 0) {
+    cat = nextTwo.join(" ").trim(); // ✅ captures “fast food”, “coffee shop”, etc.
+  }
+}
+
 
     if (!parsedAmount) {
       alert("Couldn't detect an amount. Try again.");
