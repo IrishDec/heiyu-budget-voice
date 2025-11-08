@@ -3,6 +3,15 @@
 import React, { useState, useEffect } from "react";
 import Menu from "./components/Menu";
 
+// ✅ Custom event type to fix SpeechRecognition TS issues
+interface SpeechRecognitionEventLike extends Event {
+  results: {
+    [index: number]: {
+      [index: number]: { transcript: string };
+    };
+  };
+}
+
 type EntryType = "Income" | "Expense";
 
 type Entry = {
@@ -22,7 +31,7 @@ export default function Home() {
   const [notes, setNotes] = useState("");
   const [entries, setEntries] = useState<Entry[]>([]);
 
-  // ✅ Load from localStorage once (async to avoid lint warning)
+  // ✅ Load entries
   useEffect(() => {
     if (typeof window === "undefined") return;
     const saved = localStorage.getItem("heiyu_budget_entries");
@@ -35,7 +44,7 @@ export default function Home() {
     }
   }, []);
 
-  // ✅ Save to localStorage when entries change
+  // ✅ Save entries
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
@@ -45,66 +54,80 @@ export default function Home() {
     }
   }, [entries]);
 
-  // 🎙️ Voice entry
-  const handleMicClick = () => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Speech recognition not supported in this browser.");
+   // 🎙️ Voice entry
+const handleMicClick = () => {
+  // Safety: only run in browser
+  if (typeof window === "undefined") {
+    alert("Speech recognition only works in the browser.");
+    return;
+  }
+
+  // Get the constructor from window (no TS drama)
+  const SpeechRecognitionConstructor =
+    (window as any).SpeechRecognition ||
+    (window as any).webkitSpeechRecognition;
+
+  if (!SpeechRecognitionConstructor) {
+    alert("Speech recognition not supported in this browser.");
+    return;
+  }
+
+  const recognition = new SpeechRecognitionConstructor();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+
+  recognition.onstart = () => setListening(true);
+
+  recognition.onresult = (event: SpeechRecognitionEventLike) => {
+    const spokenText = event.results[0][0].transcript.trim();
+
+    const lower = spokenText.toLowerCase();
+    const type: EntryType = lower.includes("income") ? "Income" : "Expense";
+
+    const amountMatch = spokenText.match(/(\d+([.,]\d{1,2})?)/);
+    const rawAmount = amountMatch ? amountMatch[1] : "";
+    const parsedAmount = rawAmount.replace(",", ".");
+
+    const words = spokenText.split(/\s+/);
+    const amtIndex = words.findIndex(
+      (w) => w.replace(/[^0-9.,]/g, "") === rawAmount
+    );
+
+    let cat = "Uncategorized";
+    if (amtIndex !== -1 && words[amtIndex + 1]) {
+      const nextWord = words[amtIndex + 1].replace(/[^a-zA-Z]/g, "");
+      if (
+        nextWord &&
+        !["income", "expense", "euro", "euros", "€"].includes(
+          nextWord.toLowerCase()
+        )
+      ) {
+        cat = nextWord;
+      }
+    }
+
+    if (!parsedAmount) {
+      alert("Couldn't detect an amount. Try again.");
       return;
     }
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
-
-    recognition.onstart = () => setListening(true);
-   recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const spokenText = event.results[0][0].transcript.trim();
-
-      const lower = spokenText.toLowerCase();
-      const type: EntryType = lower.includes("income") ? "Income" : "Expense";
-
-      const amountMatch = spokenText.match(/(\d+([.,]\d{1,2})?)/);
-      const rawAmount = amountMatch ? amountMatch[1] : "";
-      const parsedAmount = rawAmount.replace(",", ".");
-
-      const words = spokenText.split(/\s+/);
-      const amtIndex = words.findIndex((w: string) =>
-        w.replace(/[^0-9.,]/g, "") === rawAmount
-      );
-
-      let cat = "Uncategorized";
-      if (amtIndex !== -1 && words[amtIndex + 1]) {
-        const nextWord = words[amtIndex + 1].replace(/[^a-zA-Z]/g, "");
-        if (
-          nextWord &&
-          !["income", "expense", "euro", "euros", "€"].includes(nextWord.toLowerCase())
-        ) {
-          cat = nextWord;
-        }
-      }
-
-      if (!parsedAmount) {
-        alert("Couldn't detect an amount. Try again.");
-        return;
-      }
-
-      const entry: Entry = {
-        type,
-        amount: parsedAmount,
-        category: cat,
-        text: spokenText,
-        created_at: new Date().toISOString(),
-      };
-
-      setEntries((prev) => [entry, ...prev].slice(0, 50));
+    const entry: Entry = {
+      type,
+      amount: parsedAmount,
+      category: cat,
+      text: spokenText,
+      created_at: new Date().toISOString(),
     };
 
-    recognition.onerror = () => setListening(false);
-    recognition.onend = () => setListening(false);
-    recognition.start();
+    setEntries((prev) => [entry, ...prev].slice(0, 50));
   };
+
+  recognition.onerror = () => setListening(false);
+  recognition.onend = () => setListening(false);
+
+  recognition.start();
+};
+
 
   // ✏️ Manual Add
   const handleAdd = () => {
@@ -167,7 +190,7 @@ export default function Home() {
     }
   };
 
-  // UI
+  // 🧱 UI
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white px-4 py-10">
       <Menu />
@@ -175,7 +198,9 @@ export default function Home() {
         <h1 className="text-3xl font-bold mb-2">
           Heiyu<span className="text-indigo-400">Budget</span>
         </h1>
-        <p className="text-gray-400 text-sm mb-8">Fast voice or text budgeting.</p>
+        <p className="text-gray-400 text-sm mb-8">
+          Fast voice or text budgeting.
+        </p>
 
         {/* 🎙️ Mic */}
         <button
@@ -189,7 +214,7 @@ export default function Home() {
           {listening ? "🎙️ Listening..." : "🎤 Tap to Speak"}
         </button>
 
-        {/* ✏️ Manual */}
+        {/* ✏️ Manual Add */}
         {!manualMode ? (
           <button
             onClick={() => setManualMode(true)}
@@ -241,7 +266,9 @@ export default function Home() {
         {entries.length > 0 && (
           <div className="bg-gray-800/60 p-5 mt-8 rounded-2xl border border-gray-700 text-left">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-semibold text-indigo-300">Recent Entries</h3>
+              <h3 className="text-lg font-semibold text-indigo-300">
+                Recent Entries
+              </h3>
               <button
                 onClick={handleClear}
                 className="text-xs text-gray-400 hover:text-red-400 transition"
@@ -253,9 +280,12 @@ export default function Home() {
               {entries.map((e, i) => (
                 <li key={i} className="border-b border-gray-700 py-2">
                   <p className="text-sm text-gray-200">
-                    <strong>{e.type}:</strong> {e.category} (€{parseFloat(e.amount).toFixed(2)})
+                    <strong>{e.type}:</strong> {e.category} (€
+                    {parseFloat(e.amount).toFixed(2)})
                   </p>
-                  <p className="text-xs text-gray-500">{new Date(e.created_at).toLocaleString()}</p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(e.created_at).toLocaleString()}
+                  </p>
                 </li>
               ))}
             </ul>
@@ -264,7 +294,9 @@ export default function Home() {
 
         {/* 📊 Totals */}
         <div className="bg-gray-800/60 p-5 mt-6 rounded-2xl border border-gray-700 text-center">
-          <h3 className="text-lg font-semibold text-indigo-300 mb-4">Totals Summary</h3>
+          <h3 className="text-lg font-semibold text-indigo-300 mb-4">
+            Totals Summary
+          </h3>
           <div className="grid grid-cols-4 text-sm font-semibold text-gray-300 mb-3">
             <div></div>
             <div>Today</div>
@@ -288,5 +320,3 @@ export default function Home() {
     </main>
   );
 }
-
-
