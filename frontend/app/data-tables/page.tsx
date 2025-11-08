@@ -46,8 +46,15 @@ export default function DataTablesPage() {
           ← Back to Dashboard
         </Link>
 
-        <DataTables entries={entries} />
-      </div>
+       <DataTables
+  entries={entries}
+  onDelete={(index) => {
+    const updated = entries.filter((_, i) => i !== index);
+    setEntries(updated);
+    localStorage.setItem("heiyu_budget_entries", JSON.stringify(updated));
+  }}
+/>
+       </div>
     </main>
   );
 }
