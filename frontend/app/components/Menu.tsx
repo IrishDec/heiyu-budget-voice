@@ -56,7 +56,7 @@ export default function Menu() {
           </Link>
 
           <Link
-            href="/tables"
+            href="/data-tables"
             className="block text-gray-300 hover:text-indigo-300 transition"
             onClick={() => setOpen(false)}
           >
@@ -74,3 +74,4 @@ export default function Menu() {
     </>
   );
 }
+
