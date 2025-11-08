@@ -59,7 +59,7 @@ export default function Home() {
     recognition.interimResults = false;
 
     recognition.onstart = () => setListening(true);
-    recognition.onresult = (event: SpeechRecognitionResultEvent) => {
+   recognition.onresult = (event: SpeechRecognitionEvent) => {
       const spokenText = event.results[0][0].transcript.trim();
 
       const lower = spokenText.toLowerCase();
