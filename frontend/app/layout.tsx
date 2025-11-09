@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "HeiyuBudget",
   description: "Fast voice or text budgeting app",
+  icons: {
+    icon: "/favicon.png", // matches your image file
+  },
 };
 
 export default function RootLayout({
