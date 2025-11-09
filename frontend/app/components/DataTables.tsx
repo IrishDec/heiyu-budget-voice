@@ -51,16 +51,16 @@ export default function DataTables({
                     </td>
                     <td className="p-2 text-center">
                    <button
-  onClick={() => {
-    if (confirm("Delete this entry?")) {
-      onDelete?.(entries.findIndex(x => x === e));
-    }
-  }}
-  className="text-red-400 hover:text-red-500"
->
-  🗑️
-</button>
-
+                     onClick={() => {
+                     if (confirm("Delete this entry?")) {
+                     onDelete?.(entries.findIndex(x => x === e));
+                     }
+                     }}
+                     className="text-red-400 hover:text-red-500"
+                     >
+                     🗑️
+                      </button>
+                     
                     </td>
                   </tr>
                 ))
@@ -104,18 +104,16 @@ export default function DataTables({
                       {new Date(e.created_at).toLocaleString()}
                     </td>
                     <td className="p-2 text-center">
-                  <button
-  onClick={() => {
-    if (confirm("Delete this entry?")) {
-      onDelete?.(entries.findIndex(x => x === e));
-    }
-  }}
-  className="text-red-400 hover:text-red-500"
->
-  🗑️
-</button>
-
-                    </button>
+                 <button
+                  onClick={() => {
+                  if (confirm("Delete this entry?")) {
+                  onDelete?.(entries.findIndex(x => x === e));
+                 }
+                 }}
+                 className="text-red-400 hover:text-red-500"
+                 >
+                 🗑️
+                </button>
                    </td>
                   </tr>
                 ))
