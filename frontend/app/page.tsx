@@ -271,31 +271,32 @@ if (amtIndex !== -1) {
         {entries.length > 0 && (
           <div className="bg-gray-800/60 p-5 mt-8 rounded-2xl border border-gray-700 text-left">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-semibold text-indigo-300">
-                Recent Entries
-              </h3>
-              <button
-                onClick={handleClear}
-                className="text-xs text-gray-400 hover:text-red-400 transition"
-              >
-                Clear
-              </button>
-            </div>
-            <ul className="max-h-40 overflow-y-auto">
-              {entries.map((e, i) => (
-                <li key={i} className="border-b border-gray-700 py-2">
-                  <p className="text-sm text-gray-200">
-                    <strong>{e.type}:</strong> {e.category} (€
-                    {parseFloat(e.amount).toFixed(2)})
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(e.created_at).toLocaleString()}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+              {/* 🧾 Recent */}
+{entries.length > 0 && (
+  <div className="bg-gray-800/60 p-5 mt-8 rounded-2xl border border-gray-700 text-left">
+    <div className="flex justify-between items-center mb-3 w-full">
+      <h3 className="text-lg font-semibold text-indigo-300">Recent Entries</h3>
+      <Link
+        href="/data-tables"
+        className="text-xs text-indigo-400 hover:text-indigo-300 transition"
+      >
+        View All →
+      </Link>
+    </div>
+    <ul className="max-h-40 overflow-y-auto">
+      {entries.map((e, i) => (
+        <li key={i} className="border-b border-gray-700 py-2">
+          <p className="text-sm text-gray-200">
+            <strong>{e.type}:</strong> {e.category} (€{parseFloat(e.amount).toFixed(2)})
+          </p>
+          <p className="text-xs text-gray-500">
+            {new Date(e.created_at).toLocaleString()}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
 
         {/* 📊 Totals */}
         <div className="bg-gray-800/60 p-5 mt-6 rounded-2xl border border-gray-700 text-center">
