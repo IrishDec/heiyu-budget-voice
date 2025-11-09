@@ -32,7 +32,14 @@ export default function DataTablesPage() {
     }
   }, []);
 
-  return (
+  const handleDelete = (index: number) => {
+  const updated = [...entries];
+  updated.splice(index, 1);
+  setEntries(updated);
+  localStorage.setItem("heiyu_budget_entries", JSON.stringify(updated));
+};
+
+return (
     <main className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white px-4 py-10">
       <Menu />
       <div className="max-w-2xl mx-auto text-center">

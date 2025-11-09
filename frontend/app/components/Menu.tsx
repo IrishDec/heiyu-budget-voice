@@ -63,7 +63,14 @@ export default function Menu() {
             💰 Data Tables
           </Link>
 
-          <button
+          <Link
+           href="/updates"
+          className="block text-gray-300 hover:text-indigo-300 transition"
+          onClick={() => setOpen(false)}
+          >
+         🆕 Updates / New Features
+         </Link>
+            <button
             className="block w-full text-left text-gray-400 hover:text-indigo-200 transition mt-4 text-xs"
             onClick={() => setOpen(false)}
           >
