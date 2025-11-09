@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Menu from "./components/Menu";
+import Link from "next/link";
+
 
 // ✅ Custom event type to fix SpeechRecognition TS issues
 interface SpeechRecognitionEventLike extends Event {
@@ -267,11 +269,7 @@ if (amtIndex !== -1) {
           </div>
         )}
 
-        {/* 🧾 Recent */}
-        {entries.length > 0 && (
-          <div className="bg-gray-800/60 p-5 mt-8 rounded-2xl border border-gray-700 text-left">
-            <div className="flex justify-between items-center mb-3">
-              {/* 🧾 Recent */}
+       {/* 🧾 Recent */}
 {entries.length > 0 && (
   <div className="bg-gray-800/60 p-5 mt-8 rounded-2xl border border-gray-700 text-left">
     <div className="flex justify-between items-center mb-3 w-full">
@@ -297,8 +295,7 @@ if (amtIndex !== -1) {
     </ul>
   </div>
 )}
-
-        {/* 📊 Totals */}
+ {/* 📊 Totals */}
         <div className="bg-gray-800/60 p-5 mt-6 rounded-2xl border border-gray-700 text-center">
           <h3 className="text-lg font-semibold text-indigo-300 mb-4">
             Totals Summary
