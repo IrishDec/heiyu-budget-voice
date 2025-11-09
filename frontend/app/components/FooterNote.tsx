@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function FooterNote() {
   return (
     <footer className="w-full text-center text-xs text-gray-400 mt-10 mb-4">
@@ -7,6 +9,13 @@ export default function FooterNote() {
         ⚠️ This is an early <strong>Heiyu Budget Voice</strong> test version. 
         No personal data is collected or stored. Voice data is processed only on your device.
       </p>
+
+      <Link
+        href="/updates"
+        className="block text-indigo-400 hover:text-indigo-300 mt-2"
+      >
+        🆕 Updates / New Features
+      </Link>
     </footer>
   );
 }
