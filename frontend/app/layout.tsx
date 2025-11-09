@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "HeiyuBudget",
   description: "Fast voice or text budgeting app",
    icons: {
-    icon: "/app/updates/icon.png",
+    icon: "/updates/icon.png",
  },
 };
 
