@@ -14,7 +14,7 @@ export default function UpdatesPage() {
           <li>✅ Voice recognition improved for multi-word categories.</li>
           <li>✅ Added delete confirmation for data tables.</li>
           <li>🧱 Next up: separate Business and Personal expense tracking.</li>
-          <li>🛠️ Performance and privacy updates in progress.</li>
+          <li>✅ Performance and privacy updated.</li>
         </ul>
       </div>
 
