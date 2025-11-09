@@ -8,14 +8,8 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Content-Security-Policy",
-            value: `
-              default-src 'self';
-              script-src 'self' 'unsafe-inline' 'unsafe-eval';
-              style-src 'self' 'unsafe-inline';
-              img-src 'self' data:;
-              font-src 'self';
-              connect-src 'self' blob:;
-            `.replace(/\n/g, "")
+            value:
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:;",
           },
         ],
       },
@@ -24,5 +18,6 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
 
 
