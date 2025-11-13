@@ -158,36 +158,59 @@ if (amtIndex !== -1) {
     setManualMode(false);
   };
 
-  // 🧮 Totals
+   // 🧮 Totals – with proper Monday–Sunday weeks and calendar months
   const now = new Date();
-  const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
-  const sameMonth = (a: Date, b: Date) =>
-    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
-  const sameWeek = (a: Date, b: Date) => {
-    const start = (d: Date) => {
-      const s = new Date(d);
-      s.setDate(d.getDate() - d.getDay());
-      return s;
-    };
-    return start(a).toDateString() === start(b).toDateString();
+
+  // Start of "today" (local)
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+
+  const isSameDayAsToday = (d: Date) => {
+    const dStart = new Date(d);
+    dStart.setHours(0, 0, 0, 0);
+    return dStart.getTime() === todayStart.getTime();
   };
 
+  // Week: Monday 00:00 → next Monday 00:00
+  const weekStart = new Date(todayStart);
+  const day = weekStart.getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+  const diffFromMonday = (day + 6) % 7; // 0 if Mon, 1 if Tue, ..., 6 if Sun
+  weekStart.setDate(weekStart.getDate() - diffFromMonday);
+
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 7);
+
+  // Month: first of this month 00:00 → first of next month 00:00
+  const monthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+  const monthEnd = new Date(todayStart.getFullYear(), todayStart.getMonth() + 1, 1);
+
   const sumFor = (type: EntryType) => {
-    let today = 0, week = 0, month = 0;
+    let today = 0,
+      week = 0,
+      month = 0;
+
     entries.forEach((e) => {
       if (e.type !== type) return;
       const d = new Date(e.created_at);
       const val = parseFloat(e.amount);
       if (isNaN(val)) return;
-      if (sameDay(now, d)) today += val;
-      if (sameWeek(now, d)) week += val;
-      if (sameMonth(now, d)) month += val;
+
+      // Today
+      if (isSameDayAsToday(d)) today += val;
+
+      // Week (Mon → Sun)
+      if (d >= weekStart && d < weekEnd) week += val;
+
+      // Month (calendar month)
+      if (d >= monthStart && d < monthEnd) month += val;
     });
+
     return { today, week, month };
   };
 
   const incomeTotals = sumFor("Income");
   const expenseTotals = sumFor("Expense");
+
 
   // 🧹 Clear
   const handleClear = () => {
