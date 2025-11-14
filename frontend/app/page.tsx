@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Menu from "./components/Menu";
 import Link from "next/link";
+import { getWeeklyIncome } from "../src/income/connectToBudget";
+
 
 
 // ✅ Custom event type to fix SpeechRecognition TS issues
@@ -211,6 +213,8 @@ if (amtIndex !== -1) {
   const incomeTotals = sumFor("Income");
   const expenseTotals = sumFor("Expense");
 
+  const multiIncome = getWeeklyIncome(weekStart, weekEnd);
+
 
   // 🧹 Clear
   const handleClear = () => {
@@ -335,6 +339,12 @@ if (amtIndex !== -1) {
             <div>€{incomeTotals.week.toFixed(2)}</div>
             <div>€{incomeTotals.month.toFixed(2)}</div>
           </div>
+          
+          {/* 👇 Add this line right here */}
+          <div className="text-xs text-indigo-400 mb-2">
+            New Multi-Income Week: €{multiIncome.toFixed(2)}
+           </div>
+        
           <div className="grid grid-cols-4 text-sm items-center">
             <div className="text-pink-400 font-medium">Expense</div>
             <div>€{expenseTotals.today.toFixed(2)}</div>
