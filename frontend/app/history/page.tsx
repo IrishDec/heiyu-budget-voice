@@ -3,10 +3,12 @@
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Menu from "../components/Menu";
+// 👇 FIX: Import Supabase functions instead of local storage
 import { 
-  loadEntries, 
-  saveEntries, 
-  loadCategories, 
+  fetchEntries, 
+  fetchCategories, 
+  updateEntry, 
+  deleteEntry, 
   getWeekBounds 
 } from "../../lib/store";
 import { Entry, EntryType, CategoryState } from "../../lib/types";
@@ -32,22 +34,22 @@ export default function HistoryPage() {
   const [editDate, setEditDate] = useState("");
   const [editTime, setEditTime] = useState("");
 
+  // 🔄 Load from Database
   useEffect(() => {
     setMounted(true);
-    const loadedEntries = loadEntries();
-    const loadedCats = loadCategories();
-    
-    // Sort newest → oldest
-    const sorted = [...loadedEntries].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-    
-    setEntries(sorted);
-    setCategories(loadedCats);
-    setLoading(false);
+    const initData = async () => {
+        const [dbEntries, dbCats] = await Promise.all([
+            fetchEntries(),
+            fetchCategories()
+        ]);
+        setEntries(dbEntries);
+        setCategories(dbCats);
+        setLoading(false);
+    };
+    initData();
   }, []);
 
-  // --- Filtering Logic ---
+  // --- Filtering Logic (Preserved) ---
   const filteredEntries = useMemo(() => {
     if (!mounted) return [];
 
@@ -169,29 +171,51 @@ export default function HistoryPage() {
     setEditTime(d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (editingIndex === null) return;
-    const updatedEntries = [...entries];
-    updatedEntries[editingIndex] = {
-      ...updatedEntries[editingIndex],
+    
+    const originalEntry = entries[editingIndex];
+    const newCreatedAt = new Date(`${editDate}T${editTime}`).toISOString();
+
+    const updatedEntry: Entry = {
+      ...originalEntry,
       type: editType,
       amount: editAmount,
       category: editCategory || "Uncategorized",
-      created_at: new Date(`${editDate}T${editTime}`).toISOString(),
+      created_at: newCreatedAt,
     };
-    const resorted = updatedEntries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    // Optimistic Update (Update UI immediately)
+    const newEntries = [...entries];
+    newEntries[editingIndex] = updatedEntry;
+    
+    // Sort again to keep list correct
+    const resorted = newEntries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    
     setEntries(resorted);
-    saveEntries(resorted);
     setEditingIndex(null);
+
+    // ☁️ Save to Database
+    if (updatedEntry.id) {
+        await updateEntry(updatedEntry);
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (editingIndex === null) return;
     if (!confirm("Delete this entry?")) return;
+
+    const entryToDelete = entries[editingIndex];
+
+    // Optimistic Update
     const updated = entries.filter((_, i) => i !== editingIndex);
     setEntries(updated);
-    saveEntries(updated);
     setEditingIndex(null);
+
+    // ☁️ Delete from Database
+    if (entryToDelete.id) {
+        await deleteEntry(entryToDelete.id);
+    }
   };
 
   if (!mounted) return <div className="min-h-screen bg-[#0f172a]" />;
