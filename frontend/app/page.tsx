@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from "react";
 import Menu from "./components/Menu";
 import Link from "next/link";
-import { getWeeklyIncome } from "./lib/income/connectToBudget.js";
-import { loadCategories, saveCategories } from "./lib/categoryStore.js";
-import { loadEntries, saveEntries } from "./lib/entriesStore.js";
+// 👇 FIX: Go UP one level (../) to find lib
+import { loadCategories, saveCategories, loadEntries, saveEntries } from "../lib/store";
+import { parseVoiceInput } from "../lib/voiceUtils";
+import { Entry, EntryType, CategoryState } from "../lib/types";
 
 
-// ✅ Custom event type to fix SpeechRecognition TS issues
 interface SpeechRecognitionEventLike extends Event {
   results: {
     [index: number]: {
@@ -17,24 +17,10 @@ interface SpeechRecognitionEventLike extends Event {
   };
 }
 
-type EntryType = "Income" | "Expense";
-
-type Entry = {
-  type: EntryType;
-  amount: string;
-  category: string;
-  text?: string;
-  created_at: string;
-};
-
-type CategoryState = {
-  incomeCategories: string[];
-  expenseCategories: string[];
-};
-
 export default function Home() {
   const [listening, setListening] = useState(false);
   const [manualMode, setManualMode] = useState(false);
+  
   const [entryType, setEntryType] = useState<EntryType>("Expense");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
@@ -43,48 +29,24 @@ export default function Home() {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
 
-  // Load category list
-  const { incomeCategories, expenseCategories } = loadCategories() as CategoryState;
-
-
-  const [entries, setEntries] = useState<Entry[]>(loadEntries());
+  const [categories, setCategories] = useState<CategoryState>({ incomeCategories: [], expenseCategories: [] });
+  const [entries, setEntries] = useState<Entry[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    saveEntries(entries);
-  }, [entries]);
-
-  // ✅ Load entries (synchronously)
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    try {
-      const saved = localStorage.getItem("heiyu_budget_entries");
-      if (saved) {
-        const parsed: Entry[] = JSON.parse(saved);
-        setEntries(parsed); // Directly load on mount
-      }
-    } catch (err) {
-      console.error("Error loading entries:", err);
-    }
+    setMounted(true);
+    setCategories(loadCategories());
+    setEntries(loadEntries());
   }, []);
 
-  // ✅ Save entries
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      localStorage.setItem("heiyu_budget_entries", JSON.stringify(entries));
-    } catch (err) {
-      console.error("Error saving entries:", err);
+    if (mounted) {
+      saveEntries(entries);
     }
-  }, [entries]);
+  }, [entries, mounted]);
 
-  // 🎙️ Voice entry
   const handleMicClick = () => {
-    // Safety: only run in browser
-    if (typeof window === "undefined") {
-      alert("Speech recognition only works in the browser.");
-      return;
-    }
+    if (typeof window === "undefined") return;
 
     const SpeechRecognitionConstructor =
       (window as any).SpeechRecognition ||
@@ -103,55 +65,15 @@ export default function Home() {
 
     recognition.onresult = (event: SpeechRecognitionEventLike) => {
       const spokenText = event.results[0][0].transcript.trim();
-      const lower = spokenText.toLowerCase();
+      const result = parseVoiceInput(spokenText);
 
-      // 1️⃣ Must start with Income or Expense
-      let type: EntryType | null = null;
-      if (lower.startsWith("income")) type = "Income";
-      if (lower.startsWith("expense")) type = "Expense";
-
-      if (!type) {
-        alert(
-          "Please start with 'Income' or 'Expense'.\nExample: Income 20 Street cash"
-        );
+      if (!result.success || !result.data) {
+        alert(result.error || "Could not process voice input.");
         return;
       }
-
-      // 2️⃣ Extract numeric amount (10, 10.50, 10,50)
-      const amountMatch = spokenText.match(/(\d+([.,]\d{1,2})?)/);
-      if (!amountMatch) {
-        alert("No amount found. Say: Income 20 Street cash");
-        return;
-      }
-
-      const rawAmount = amountMatch[1];
-      const parsedAmount = rawAmount.replace(",", ".");
-
-      // 3️⃣ Category = everything after amount
-      let cat = spokenText.split(rawAmount)[1]?.trim() ?? "";
-
-      // Remove leading currency words
-      cat = cat.replace(
-        /^(dollar|dollars|euro|euros|pound|pounds|yen|yuan|peso|rupee|€|\$|£|¥)\s*/i,
-        ""
-      );
-
-      if (!cat) cat = "Uncategorized";
-
-      // 🆙 Auto-capitalize category
-      cat = cat
-        .split(" ")
-        .map(
-          (word) =>
-            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        )
-        .join(" ");
 
       const entry: Entry = {
-        type,
-        amount: parsedAmount,
-        category: cat,
-        text: spokenText,
+        ...result.data,
         created_at: new Date().toISOString(),
       };
 
@@ -164,7 +86,6 @@ export default function Home() {
     recognition.start();
   };
 
-  // ✏️ Manual Add
   const handleAdd = () => {
     if (!amount) {
       alert("Enter an amount.");
@@ -186,9 +107,7 @@ export default function Home() {
     setManualMode(false);
   };
 
-  // 🧮 Totals – with proper Monday–Sunday weeks and calendar months
   const now = new Date();
-
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
 
@@ -198,9 +117,8 @@ export default function Home() {
     return dStart.getTime() === todayStart.getTime();
   };
 
-  // Week: Monday 00:00 → Sunday 23:59:59
   const weekStart = new Date(todayStart);
-  const day = weekStart.getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+  const day = weekStart.getDay(); 
   const diffFromMonday = (day + 6) % 7;
   weekStart.setDate(weekStart.getDate() - diffFromMonday);
 
@@ -208,22 +126,11 @@ export default function Home() {
   weekEnd.setDate(weekStart.getDate() + 6);
   weekEnd.setHours(23, 59, 59, 999);
 
-  // Month: first of this month 00:00 → first of next month 00:00
-  const monthStart = new Date(
-    todayStart.getFullYear(),
-    todayStart.getMonth(),
-    1
-  );
-  const monthEnd = new Date(
-    todayStart.getFullYear(),
-    todayStart.getMonth() + 1,
-    1
-  );
+  const monthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+  const monthEnd = new Date(todayStart.getFullYear(), todayStart.getMonth() + 1, 1);
 
   const sumFor = (type: EntryType) => {
-    let today = 0,
-      week = 0,
-      month = 0;
+    let today = 0, week = 0, month = 0;
 
     entries.forEach((e) => {
       if (e.type !== type) return;
@@ -242,50 +149,31 @@ export default function Home() {
   const incomeTotals = sumFor("Income");
   const expenseTotals = sumFor("Expense");
 
-
-  // 🧹 Clear
-  const handleClear = () => {
-    if (confirm("Clear all entries?")) {
-      setEntries([]);
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("heiyu_budget_entries");
-      }
-    }
-  };
-
-  // 💾 Save new category
   const handleSaveCategory = () => {
     if (!newCategoryName.trim()) return;
 
     const formatTitle = (name: string) =>
-      name
-        .toLowerCase()
-        .split(" ")
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(" ");
+      name.toLowerCase().split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 
     const formatted = formatTitle(newCategoryName.trim());
-
-    const current = loadCategories() as CategoryState;
-
-    const updated =
-      entryType === "Income"
-        ? {
-            incomeCategories: [...current.incomeCategories, formatted],
-            expenseCategories: current.expenseCategories,
-          }
-        : {
-            incomeCategories: current.incomeCategories,
-            expenseCategories: [...current.expenseCategories, formatted],
-          };
+    
+    const updated = { ...categories };
+    
+    if (entryType === "Income") {
+        updated.incomeCategories = [...updated.incomeCategories, formatted];
+    } else {
+        updated.expenseCategories = [...updated.expenseCategories, formatted];
+    }
 
     saveCategories(updated);
+    setCategories(updated);
     setNewCategoryName("");
     setShowCategoryModal(false);
     alert(`Category "${formatted}" saved!`);
   };
 
-  // 🧱 UI
+  if (!mounted) return <div className="min-h-screen bg-[#0f172a]"></div>;
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white px-4 py-10">
       <Menu />
@@ -297,7 +185,6 @@ export default function Home() {
           Fast voice or text budgeting.
         </p>
 
-        {/* 🎙️ Mic */}
         <button
           onClick={handleMicClick}
           className={`w-full py-4 mb-4 text-lg font-semibold rounded-full text-white shadow-lg transition ${
@@ -309,7 +196,6 @@ export default function Home() {
           {listening ? "🎙️ Listening..." : "🎤 Tap to Speak"}
         </button>
 
-        {/* ✏️ Manual Add + ➕ New Category */}
         {!manualMode ? (
           <>
             <button
@@ -325,13 +211,12 @@ export default function Home() {
             >
               ➕ Add New Category
             </button>
-<Link
-  href="/categories"
-  className="w-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 py-3 rounded-full font-medium shadow-md hover:brightness-110 transition mt-3 block text-center"
->
-  📁 Manage Categories
-</Link>
-
+            <Link
+              href="/categories"
+              className="w-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 py-3 rounded-full font-medium shadow-md hover:brightness-110 transition mt-3 block text-center"
+            >
+              📁 Manage Categories
+            </Link>
           </>
         ) : (
           <div className="bg-gray-800/60 p-5 mt-5 rounded-2xl shadow-xl border border-gray-700 text-left">
@@ -352,7 +237,6 @@ export default function Home() {
               className="w-full p-2 mb-3 rounded bg-gray-700 text-white"
             />
 
-            {/* Category with filtered datalist based on Income/Expense */}
             <input
               list="categoryList"
               type="text"
@@ -364,8 +248,8 @@ export default function Home() {
 
             <datalist id="categoryList">
               {(entryType === "Income"
-                ? incomeCategories
-                : expenseCategories
+                ? categories.incomeCategories
+                : categories.expenseCategories
               ).map((c: string, i: number) => (
                 <option key={i} value={c} />
               ))}
@@ -395,21 +279,19 @@ export default function Home() {
           </div>
         )}
 
-        {/* 📊 Totals */}
         <div className="bg-gray-800/60 p-5 mt-6 rounded-2xl border border-gray-700 text-center">
           <div className="flex justify-between items-center mb-4 w-full">
             <h3 className="text-lg font-semibold text-indigo-300">
               Totals Summary
             </h3>
             <Link
-            href="/history"
-            className="text-xs text-indigo-400 hover:text-indigo-300 transition"
+              href="/history"
+              className="text-xs text-indigo-400 hover:text-indigo-300 transition"
             >
-           View All →
-          </Link>
-
-            </div>
-           <div className="grid grid-cols-4 text-sm font-semibold text-gray-300 mb-3">
+              View All →
+            </Link>
+          </div>
+          <div className="grid grid-cols-4 text-sm font-semibold text-gray-300 mb-3">
             <div></div>
             <div>Today</div>
             <div>Week</div>
@@ -431,20 +313,18 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 🧾 Recent */}
         {entries.length > 0 && (
           <div className="bg-gray-800/60 p-5 mt-8 rounded-2xl border border-gray-700 text-left">
             <div className="flex justify-between items-center mb-3 w-full">
               <h3 className="text-lg font-semibold text-indigo-300">
                 Recent Entries
               </h3>
-               <Link
-               href="/history"
-               className="text-xs text-indigo-400 hover:text-indigo-300 transition"
-               >
-               View All →
-               </Link>
-
+              <Link
+                href="/history"
+                className="text-xs text-indigo-400 hover:text-indigo-300 transition"
+              >
+                View All →
+              </Link>
             </div>
 
             <ul className="max-h-40 overflow-y-auto">
@@ -463,7 +343,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* ➕ Add Category Modal */}
         {showCategoryModal && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
             <div className="bg-gray-900 p-6 rounded-2xl border border-gray-700 w-full max-w-xs">
@@ -524,8 +403,7 @@ export default function Home() {
             </div>
           </div>
         )}
-      </div>{" "}
-      {/* closes w-full max-w-sm */}
+      </div>
     </main>
   );
 }
