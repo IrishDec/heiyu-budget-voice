@@ -104,12 +104,12 @@ export default function Menu() {
             </Link>
           </div>
 
-          {/* Legal Footer */}
-          <div className="mt-8 pt-4 border-t border-gray-800 text-[10px] text-gray-600 flex flex-col gap-2">
-            <Link href="/legal/privacy" onClick={() => setOpen(false)} className="hover:text-gray-400">Privacy Policy</Link>
-            <Link href="/legal/terms" onClick={() => setOpen(false)} className="hover:text-gray-400">Terms of Service</Link>
-            <Link href="/legal/cookies" onClick={() => setOpen(false)} className="hover:text-gray-400">Cookie Policy</Link>
-            <p className="mt-2 opacity-50">© {new Date().getFullYear()} Heiyu Taxi</p>
+          {/* Legal Footer - 👇 FIXED: Changed text-gray-600 to text-gray-400 for visibility */}
+          <div className="mt-8 pt-4 border-t border-gray-800 text-[11px] text-gray-400 flex flex-col gap-3">
+            <Link href="/legal/privacy" onClick={() => setOpen(false)} className="hover:text-white transition">Privacy Policy</Link>
+            <Link href="/legal/terms" onClick={() => setOpen(false)} className="hover:text-white transition">Terms of Service</Link>
+            <Link href="/legal/cookies" onClick={() => setOpen(false)} className="hover:text-white transition">Cookie Policy</Link>
+            <p className="mt-2 opacity-50 text-[10px]">© {new Date().getFullYear()} Heiyu Taxi</p>
           </div>
         </nav>
       </div>
