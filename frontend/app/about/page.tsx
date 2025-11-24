@@ -20,7 +20,7 @@ export default function AboutPage() {
         
         <div className="text-lg text-gray-300 mb-8 leading-relaxed space-y-4">
           <p>
-            <strong>Heiyu Taxi</strong> wasn't built in a boardroom. It was built on the streets of Dublin.
+            <strong>Heiyu Budget</strong> wasn't built in a boardroom. It was built on the streets of Dublin.
           </p>
           <p>
             I spent <strong>14 years as a Taxi Driver</strong>. I know the chaos of tracking cash fares, stuffing fuel receipts into the glovebox, and trying to figure out your net profit at the end of a 12-hour shift.
@@ -36,7 +36,7 @@ export default function AboutPage() {
             <div className="text-3xl mb-3">🎤</div>
             <h3 className="font-bold text-white mb-2">Voice-First Tracking</h3>
             <p className="text-gray-400 text-sm">
-              Keep your eyes on the road. Just tap and say <em>"Spent 50 on Fuel"</em> or <em>"Income 25 Airport run"</em>.
+              Keep your eyes on the road. Just tap and say <em>"Spent 50 on Fuel"</em> or <em>"Income 25 Street Cash"</em>.
             </p>
           </div>
 
