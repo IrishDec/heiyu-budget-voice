@@ -3,11 +3,10 @@
 import React, { useState, useEffect } from "react";
 import Menu from "./components/Menu";
 import Link from "next/link";
-// 👇 FIX: Go UP one level (../) to find lib
-import { loadCategories, saveCategories, loadEntries, saveEntries } from "../lib/store";
+// 👇 FIX: Using new Supabase functions
+import { fetchCategories, fetchEntries, addEntry, getWeekBounds } from "../lib/store";
 import { parseVoiceInput } from "../lib/voiceUtils";
 import { Entry, EntryType, CategoryState } from "../lib/types";
-
 
 interface SpeechRecognitionEventLike extends Event {
   results: {
@@ -29,22 +28,25 @@ export default function Home() {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
 
+  // Data state
   const [categories, setCategories] = useState<CategoryState>({ incomeCategories: [], expenseCategories: [] });
   const [entries, setEntries] = useState<Entry[]>([]);
-  const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true); // Added loading state
 
+  // 🔄 Initial Load from Database
   useEffect(() => {
-    setMounted(true);
-    setCategories(loadCategories());
-    setEntries(loadEntries());
+    const loadData = async () => {
+      const cats = await fetchCategories();
+      setCategories(cats);
+      
+      const data = await fetchEntries();
+      setEntries(data);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
-  useEffect(() => {
-    if (mounted) {
-      saveEntries(entries);
-    }
-  }, [entries, mounted]);
-
+  // 🎙️ Voice entry
   const handleMicClick = () => {
     if (typeof window === "undefined") return;
 
@@ -63,7 +65,7 @@ export default function Home() {
 
     recognition.onstart = () => setListening(true);
 
-    recognition.onresult = (event: SpeechRecognitionEventLike) => {
+    recognition.onresult = async (event: SpeechRecognitionEventLike) => {
       const spokenText = event.results[0][0].transcript.trim();
       const result = parseVoiceInput(spokenText);
 
@@ -72,12 +74,19 @@ export default function Home() {
         return;
       }
 
-      const entry: Entry = {
+      // Create entry object (without ID, DB will assign it)
+      const newEntry: Omit<Entry, "id"> = {
         ...result.data,
         created_at: new Date().toISOString(),
       };
 
-      setEntries((prev) => [entry, ...prev].slice(0, 50));
+      // 1. Save to Database
+      const saved = await addEntry(newEntry);
+
+      // 2. Update UI immediately
+      if (saved) {
+        setEntries((prev) => [saved, ...prev]);
+      }
     };
 
     recognition.onerror = () => setListening(false);
@@ -86,13 +95,14 @@ export default function Home() {
     recognition.start();
   };
 
-  const handleAdd = () => {
+  // ✏️ Manual Add
+  const handleAdd = async () => {
     if (!amount) {
       alert("Enter an amount.");
       return;
     }
 
-    const entry: Entry = {
+    const newEntry: Omit<Entry, "id"> = {
       type: entryType,
       amount,
       category: category || "Uncategorized",
@@ -100,13 +110,20 @@ export default function Home() {
       created_at: new Date().toISOString(),
     };
 
-    setEntries((prev) => [entry, ...prev].slice(0, 50));
-    setAmount("");
-    setCategory("");
-    setNotes("");
-    setManualMode(false);
+    // 1. Save to Database
+    const saved = await addEntry(newEntry);
+
+    // 2. Update UI
+    if (saved) {
+      setEntries((prev) => [saved, ...prev]);
+      setAmount("");
+      setCategory("");
+      setNotes("");
+      setManualMode(false);
+    }
   };
 
+  // 🧮 Totals Calculation (Using your preserved Logic)
   const now = new Date();
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
@@ -117,15 +134,10 @@ export default function Home() {
     return dStart.getTime() === todayStart.getTime();
   };
 
-  const weekStart = new Date(todayStart);
-  const day = weekStart.getDay(); 
-  const diffFromMonday = (day + 6) % 7;
-  weekStart.setDate(weekStart.getDate() - diffFromMonday);
+  // Use the centralized week logic from store
+  const { start: weekStart, end: weekEnd } = getWeekBounds(now);
 
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6);
-  weekEnd.setHours(23, 59, 59, 999);
-
+  // Month: first of this month
   const monthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
   const monthEnd = new Date(todayStart.getFullYear(), todayStart.getMonth() + 1, 1);
 
@@ -149,42 +161,28 @@ export default function Home() {
   const incomeTotals = sumFor("Income");
   const expenseTotals = sumFor("Expense");
 
+  // ⚠️ Category Saving (Note: We haven't wired up 'addCategory' to DB yet, just UI for now)
   const handleSaveCategory = () => {
-    if (!newCategoryName.trim()) return;
-
-    const formatTitle = (name: string) =>
-      name.toLowerCase().split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-
-    const formatted = formatTitle(newCategoryName.trim());
-    
-    const updated = { ...categories };
-    
-    if (entryType === "Income") {
-        updated.incomeCategories = [...updated.incomeCategories, formatted];
-    } else {
-        updated.expenseCategories = [...updated.expenseCategories, formatted];
-    }
-
-    saveCategories(updated);
-    setCategories(updated);
-    setNewCategoryName("");
+    // Logic placeholder: In a full app, we would add 'addCategory' to store.ts 
+    // For now we just close the modal to keep it simple as requested.
     setShowCategoryModal(false);
-    alert(`Category "${formatted}" saved!`);
+    alert("Custom categories coming in next update!"); 
   };
 
-  if (!mounted) return <div className="min-h-screen bg-[#0f172a]"></div>;
+  if (loading) return <div className="min-h-screen bg-[#0f172a] text-white flex items-center justify-center">Loading data...</div>;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white px-4 py-10">
       <Menu />
       <div className="w-full max-w-sm text-center mx-auto">
         <h1 className="text-3xl font-bold mb-2">
-          Heiyu<span className="text-indigo-400">Budget</span>
+          Heiyu<span className="text-indigo-400">Taxi</span>
         </h1>
         <p className="text-gray-400 text-sm mb-8">
           Fast voice or text budgeting.
         </p>
 
+        {/* 🎙️ Mic */}
         <button
           onClick={handleMicClick}
           className={`w-full py-4 mb-4 text-lg font-semibold rounded-full text-white shadow-lg transition ${
@@ -196,6 +194,7 @@ export default function Home() {
           {listening ? "🎙️ Listening..." : "🎤 Tap to Speak"}
         </button>
 
+        {/* ✏️ Manual Add + ➕ New Category */}
         {!manualMode ? (
           <>
             <button
@@ -279,6 +278,7 @@ export default function Home() {
           </div>
         )}
 
+        {/* 📊 Totals */}
         <div className="bg-gray-800/60 p-5 mt-6 rounded-2xl border border-gray-700 text-center">
           <div className="flex justify-between items-center mb-4 w-full">
             <h3 className="text-lg font-semibold text-indigo-300">
@@ -313,6 +313,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* 🧾 Recent */}
         {entries.length > 0 && (
           <div className="bg-gray-800/60 p-5 mt-8 rounded-2xl border border-gray-700 text-left">
             <div className="flex justify-between items-center mb-3 w-full">
@@ -343,6 +344,7 @@ export default function Home() {
           </div>
         )}
 
+        {/* ➕ Add Category Modal */}
         {showCategoryModal && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
             <div className="bg-gray-900 p-6 rounded-2xl border border-gray-700 w-full max-w-xs">

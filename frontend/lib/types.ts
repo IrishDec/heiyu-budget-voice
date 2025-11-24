@@ -1,6 +1,7 @@
 export type EntryType = "Income" | "Expense";
 
 export type Entry = {
+  id?: string; // Added for Supabase
   type: EntryType;
   amount: string;
   category: string;
