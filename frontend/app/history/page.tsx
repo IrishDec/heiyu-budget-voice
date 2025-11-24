@@ -255,15 +255,12 @@ export default function HistoryPage() {
         ))}
       </div>
 
-      {/* 3. MANAGEMENT BUTTONS */}
-      <div className="flex justify-between items-center mb-2 px-1">
-        <Link href="/categories" className="text-xs text-indigo-400 font-semibold hover:text-indigo-300">
-            ⚙️ Manage Categories
-        </Link>
-        <Link href="/categories" className="text-xs text-emerald-400 font-semibold hover:text-emerald-300">
-            + New Category
-        </Link>
-      </div>
+     {/* 3. MANAGEMENT BUTTONS */}
+<div className="flex justify-between items-center mb-2 px-1">
+  <Link href="/categories" className="text-xs text-indigo-400 font-semibold hover:text-indigo-300">
+      ⚙️ Manage Categories
+  </Link>
+</div>
 
       {/* 4. DROPDOWN FILTERS */}
       <div className="grid grid-cols-2 gap-3 mb-6">
@@ -326,12 +323,12 @@ export default function HistoryPage() {
             </div>
         </div>
         
-        <button 
-            onClick={handleExport}
-            className="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition"
-        >
-            📥 Export This View to CSV
-        </button>
+       <button 
+    className="w-full bg-gray-700 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 opacity-50 cursor-not-allowed transition"
+    >
+    🚧 Export Coming Soon
+     </button>
+
       </div>
 
       {/* 6. LIST */}
