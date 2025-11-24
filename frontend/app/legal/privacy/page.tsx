@@ -7,7 +7,7 @@ export default function Privacy() {
       <p className="mb-4 text-sm text-gray-500">Last Updated: {new Date().getFullYear()}</p>
       
       <p className="mb-4">
-        Heiyu Taxi ("we", "us") is committed to protecting your financial data. This policy outlines how we handle your information.
+        Heiyu Budget ("we", "us") is committed to protecting your financial data. This policy outlines how we handle your information.
       </p>
       
       <h2 className="text-xl font-semibold text-white mt-8 mb-3">1. Data We Collect</h2>

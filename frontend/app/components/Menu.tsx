@@ -159,7 +159,7 @@ export default function Menu() {
             <Link href="/legal/privacy" onClick={() => setOpen(false)} className="hover:text-white transition">Privacy Policy</Link>
             <Link href="/legal/terms" onClick={() => setOpen(false)} className="hover:text-white transition">Terms of Service</Link>
             <Link href="/legal/cookies" onClick={() => setOpen(false)} className="hover:text-white transition">Cookie Policy</Link>
-            <p className="mt-2 opacity-50 text-[10px]">© {new Date().getFullYear()} Heiyu Taxi</p>
+            <p className="mt-2 opacity-50 text-[10px]">© {new Date().getFullYear()} Heiyu Budget</p>
           </div>
         </nav>
       </div>

@@ -7,12 +7,12 @@ export default function Terms() {
       
       <h2 className="text-xl font-semibold text-white mt-8 mb-3">1. Introduction</h2>
       <p className="mb-4">
-        Heiyu Taxi is a productivity tool designed to help freelancers, taxi drivers, and gig workers track their income.
+        Heiyu Budget is a productivity tool designed to help freelancers, taxi drivers, and gig workers track their income.
       </p>
 
       <h2 className="text-xl font-semibold text-white mt-8 mb-3">2. Disclaimer</h2>
       <p className="mb-4">
-        <strong>We are not accountants.</strong> While we strive for accuracy, Heiyu Taxi is a record-keeping tool, not a substitute for professional tax advice. You are responsible for verifying your own tax returns and financial declarations.
+        <strong>We are not accountants.</strong> While we strive for accuracy, Heiyu Budget is a record-keeping tool, not a substitute for professional tax advice. You are responsible for verifying your own tax returns and financial declarations.
       </p>
 
       <h2 className="text-xl font-semibold text-white mt-8 mb-3">3. Service Availability</h2>
