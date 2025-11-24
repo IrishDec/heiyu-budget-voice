@@ -46,7 +46,7 @@ export default function Menu() {
       >
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-800">
           <h2 className="text-lg font-semibold text-indigo-300">
-            HeiyuTaxi
+            HeiyuBudget
           </h2>
           <button
             onClick={() => setOpen(false)}

@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Heiyu Taxi",
-  description: "Fast voice or text budgeting app for taxi drivers",
+  title: "Heiyu Budget",
+  description: "Fast voice or text budgeting app.",
    icons: {
     icon: "/updates/icon.png",
  },
