@@ -1,10 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+// 👇 Import currency functions
+import { getCurrency, saveCurrency } from "../../lib/store";
 
 export default function Menu() {
   const [open, setOpen] = useState(false);
+  const [currentCurrency, setCurrentCurrency] = useState("€");
+
+  useEffect(() => {
+    setCurrentCurrency(getCurrency());
+  }, []);
+
+  const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    saveCurrency(e.target.value);
+  };
 
   return (
     <>
@@ -46,7 +57,26 @@ export default function Menu() {
           </button>
         </div>
 
-        <nav className="px-4 py-4 space-y-1 overflow-y-auto h-[calc(100vh-60px)]">
+        {/* 👇 Currency Picker */}
+        <div className="px-4 py-4 border-b border-gray-800">
+          <label className="text-xs text-gray-500 uppercase font-bold block mb-2">Currency</label>
+          <select 
+            value={currentCurrency} 
+            onChange={handleCurrencyChange}
+            className="w-full bg-gray-900 text-white border border-gray-700 rounded p-2 text-sm focus:border-indigo-500 outline-none"
+          >
+            <option value="€">Euro (€)</option>
+            <option value="$">Dollar ($)</option>
+            <option value="£">Pound (£)</option>
+            <option value="¥">Yen (¥)</option>
+            <option value="₹">Rupee (₹)</option>
+            <option value="₣">Franc (₣)</option>
+            <option value="kr">Kroner (kr)</option>
+            <option value="R">Rand (R)</option>
+          </select>
+        </div>
+
+        <nav className="px-4 py-4 space-y-1 overflow-y-auto h-[calc(100vh-160px)]">
           {/* Main App Links */}
           <div className="space-y-3 mb-6">
             <Link
@@ -104,7 +134,7 @@ export default function Menu() {
             </Link>
           </div>
 
-          {/* Legal Footer - 👇 FIXED: Changed text-gray-600 to text-gray-400 for visibility */}
+          {/* Legal Footer */}
           <div className="mt-8 pt-4 border-t border-gray-800 text-[11px] text-gray-400 flex flex-col gap-3">
             <Link href="/legal/privacy" onClick={() => setOpen(false)} className="hover:text-white transition">Privacy Policy</Link>
             <Link href="/legal/terms" onClick={() => setOpen(false)} className="hover:text-white transition">Terms of Service</Link>
