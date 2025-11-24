@@ -33,14 +33,24 @@ export const fetchEntries = async (): Promise<Entry[]> => {
 };
 
 export const addEntry = async (entry: Omit<Entry, "id" | "created_at">) => {
+  // 👇 FIX: Get the logged-in user first
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    alert("You must be logged in to save data!");
+    return null;
+  }
+
+  // 👇 FIX: Attach user_id to the data being saved
   const { data, error } = await supabase
     .from("entries")
-    .insert([entry])
+    .insert([{ ...entry, user_id: user.id }]) 
     .select()
     .single();
 
   if (error) {
     console.error("Error adding entry:", error);
+    alert("Error saving: " + error.message); // Show error on phone screen
     return null;
   }
   return data;
@@ -92,23 +102,24 @@ export const fetchCategories = async (): Promise<CategoryState> => {
 };
 
 export const updateCategories = async (categories: CategoryState) => {
-  // First check if a settings row exists for this user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
   const { data: existing } = await supabase.from("settings").select("user_id").single();
 
   let error;
   if (!existing) {
-    // Create row if missing
     const { error: insertError } = await supabase.from("settings").insert([{
+      user_id: user.id, // Ensure user_id is attached
       income_categories: categories.incomeCategories,
       expense_categories: categories.expenseCategories
     }]);
     error = insertError;
   } else {
-    // Update existing row
     const { error: updateError } = await supabase.from("settings").update({
       income_categories: categories.incomeCategories,
       expense_categories: categories.expenseCategories
-    }).eq("user_id", existing.user_id);
+    }).eq("user_id", user.id);
     error = updateError;
   }
 
