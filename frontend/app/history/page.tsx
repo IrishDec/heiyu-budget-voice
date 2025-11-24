@@ -3,13 +3,14 @@
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Menu from "../components/Menu";
-// 👇 FIX: Import Supabase functions instead of local storage
+// 👇 Import getCurrency
 import { 
   fetchEntries, 
   fetchCategories, 
   updateEntry, 
   deleteEntry, 
-  getWeekBounds 
+  getWeekBounds,
+  getCurrency 
 } from "../../lib/store";
 import { Entry, EntryType, CategoryState } from "../../lib/types";
 
@@ -20,6 +21,9 @@ export default function HistoryPage() {
   const [categories, setCategories] = useState<CategoryState>({ incomeCategories: [], expenseCategories: [] });
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+  
+  // 👇 Currency State
+  const [currency, setCurrency] = useState("€");
 
   // Filters
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("Week");
@@ -34,10 +38,13 @@ export default function HistoryPage() {
   const [editDate, setEditDate] = useState("");
   const [editTime, setEditTime] = useState("");
 
-  // 🔄 Load from Database
+  // 🔄 Load from Database & Local Storage
   useEffect(() => {
     setMounted(true);
     const initData = async () => {
+        // Load Currency Preference
+        setCurrency(getCurrency());
+
         const [dbEntries, dbCats] = await Promise.all([
             fetchEntries(),
             fetchCategories()
@@ -185,11 +192,9 @@ export default function HistoryPage() {
       created_at: newCreatedAt,
     };
 
-    // Optimistic Update (Update UI immediately)
+    // Optimistic Update
     const newEntries = [...entries];
     newEntries[editingIndex] = updatedEntry;
-    
-    // Sort again to keep list correct
     const resorted = newEntries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     
     setEntries(resorted);
@@ -224,13 +229,13 @@ export default function HistoryPage() {
     <main className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white px-4 py-6 pb-24">
       <Menu />
       
-      {/* 1. HEADER (Cleaned up) */}
+      {/* 1. HEADER */}
       <div className="flex justify-between items-center mb-6">
         <Link href="/" className="text-gray-400 hover:text-white transition text-lg font-bold">
             ← Back
         </Link>
         <h1 className="text-2xl font-bold">History</h1>
-        <div className="w-10"></div> {/* Spacer to center title */}
+        <div className="w-10"></div>
       </div>
 
       {/* 2. TIME TOGGLES */}
@@ -302,23 +307,25 @@ export default function HistoryPage() {
             {timeFilter} Summary • {selectedCategory === "All" ? "All Categories" : selectedCategory}
         </p>
         <div className="flex items-baseline gap-1">
+            {/* 👇 Currency used here */}
             <span className={`text-3xl font-bold ${netBalance >= 0 ? "text-white" : "text-pink-400"}`}>
-                €{netBalance.toFixed(2)}
+                {currency}{netBalance.toFixed(2)}
             </span>
             <span className="text-gray-500 text-sm">Net Profit</span>
         </div>
         <div className="flex gap-4 mt-3 pt-3 border-t border-gray-700/50 mb-3">
             <div>
                 <p className="text-[10px] text-emerald-400 font-bold">INCOME</p>
-                <p className="text-lg text-gray-200">€{totalIncome.toFixed(2)}</p>
+                {/* 👇 Currency used here */}
+                <p className="text-lg text-gray-200">{currency}{totalIncome.toFixed(2)}</p>
             </div>
             <div>
                 <p className="text-[10px] text-pink-400 font-bold">EXPENSE</p>
-                <p className="text-lg text-gray-200">€{totalExpense.toFixed(2)}</p>
+                {/* 👇 Currency used here */}
+                <p className="text-lg text-gray-200">{currency}{totalExpense.toFixed(2)}</p>
             </div>
         </div>
         
-        {/* 👇 NEW EXPORT BUTTON LOCATION */}
         <button 
             onClick={handleExport}
             className="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition"
@@ -354,7 +361,8 @@ export default function HistoryPage() {
                         <p className="text-xs text-gray-500">{formatTime24(entry.created_at)} • {entry.type}</p>
                     </div>
                     <div className={`text-sm font-bold ${entry.type === "Income" ? "text-emerald-400" : "text-pink-400"}`}>
-                        {entry.type === "Income" ? "+" : "-"}€{parseFloat(entry.amount).toFixed(2)}
+                        {/* 👇 Currency used here */}
+                        {entry.type === "Income" ? "+" : "-"}{currency}{parseFloat(entry.amount).toFixed(2)}
                     </div>
                   </button>
                 ))}
@@ -364,7 +372,7 @@ export default function HistoryPage() {
         </div>
       )}
 
-      {/* Edit Modal (Same as before) */}
+      {/* Edit Modal */}
       {editingIndex !== null && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 px-4 backdrop-blur-sm">
           <div className="bg-gray-900 p-6 rounded-2xl border border-gray-700 w-full max-w-sm shadow-2xl">
@@ -382,7 +390,7 @@ export default function HistoryPage() {
                 </select>
               </div>
               <div>
-                <label className="block mb-1 text-gray-400">Amount (€)</label>
+                <label className="block mb-1 text-gray-400">Amount ({currency})</label>
                 <input
                   type="number"
                   value={editAmount}

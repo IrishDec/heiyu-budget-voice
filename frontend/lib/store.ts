@@ -33,7 +33,6 @@ export const fetchEntries = async (): Promise<Entry[]> => {
 };
 
 export const addEntry = async (entry: Omit<Entry, "id" | "created_at">) => {
-  // 👇 FIX: Get the logged-in user first
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {
@@ -41,7 +40,6 @@ export const addEntry = async (entry: Omit<Entry, "id" | "created_at">) => {
     return null;
   }
 
-  // 👇 FIX: Attach user_id to the data being saved
   const { data, error } = await supabase
     .from("entries")
     .insert([{ ...entry, user_id: user.id }]) 
@@ -50,7 +48,7 @@ export const addEntry = async (entry: Omit<Entry, "id" | "created_at">) => {
 
   if (error) {
     console.error("Error adding entry:", error);
-    alert("Error saving: " + error.message); // Show error on phone screen
+    alert("Error saving: " + error.message);
     return null;
   }
   return data;
@@ -110,7 +108,7 @@ export const updateCategories = async (categories: CategoryState) => {
   let error;
   if (!existing) {
     const { error: insertError } = await supabase.from("settings").insert([{
-      user_id: user.id, // Ensure user_id is attached
+      user_id: user.id,
       income_categories: categories.incomeCategories,
       expense_categories: categories.expenseCategories
     }]);
@@ -124,4 +122,17 @@ export const updateCategories = async (categories: CategoryState) => {
   }
 
   if (error) console.error("Error updating categories:", error);
+};
+
+// --- Currency Logic (New) ---
+
+export const getCurrency = (): string => {
+  if (typeof window === "undefined") return "€";
+  return localStorage.getItem("heiyu_currency") || "€";
+};
+
+export const saveCurrency = (symbol: string) => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("heiyu_currency", symbol);
+  window.location.reload(); // Reloads page to apply new currency instantly
 };
