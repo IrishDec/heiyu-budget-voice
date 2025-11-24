@@ -4,7 +4,15 @@ import React, { useState, useEffect } from "react";
 import Menu from "./components/Menu";
 import Link from "next/link";
 // 👇 Import getCurrency
-import { fetchCategories, fetchEntries, addEntry, getWeekBounds, getCurrency } from "../lib/store";
+import { 
+  fetchCategories, 
+  fetchEntries, 
+  addEntry, 
+  getWeekBounds, 
+  getCurrency,
+  updateCategories
+} from "../lib/store";
+
 import { parseVoiceInput } from "../lib/voiceUtils";
 import { Entry, EntryType, CategoryState } from "../lib/types";
 import { supabase } from "../lib/supabaseClient";
@@ -118,7 +126,39 @@ export default function Home() {
   const incomeTotals = sumFor("Income");
   const expenseTotals = sumFor("Expense");
 
-  const handleSaveCategory = () => { setShowCategoryModal(false); alert("Custom categories updating coming soon!"); };
+  const handleSaveCategory = async () => {
+  if (!newCategoryName.trim()) return;
+
+  const formatted = newCategoryName
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+
+  const updatedIncome = [...categories.incomeCategories];
+  const updatedExpense = [...categories.expenseCategories];
+
+  if (entryType === "Income") {
+    updatedIncome.push(formatted);
+  } else {
+    updatedExpense.push(formatted);
+  }
+
+  // Save to DB
+  await updateCategories({
+    incomeCategories: updatedIncome,
+    expenseCategories: updatedExpense,
+  });
+
+  // Update local UI
+  setCategories({
+    incomeCategories: updatedIncome,
+    expenseCategories: updatedExpense,
+  });
+
+  setNewCategoryName("");
+  setShowCategoryModal(false);
+};
+
 
   if (loading) return <div className="min-h-screen bg-[#0f172a] text-white flex items-center justify-center">Loading...</div>;
 
@@ -151,9 +191,13 @@ export default function Home() {
         {!manualMode ? (
           <>
             <button onClick={() => setManualMode(true)} className="w-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 text-white py-3 rounded-full font-medium shadow-md hover:brightness-110 transition">✏️ Add by Text</button>
-            <button onClick={() => setShowCategoryModal(true)} className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 text-white py-3 rounded-full font-medium shadow-md hover:brightness-110 transition mt-3">➕ Add New Category</button>
-            <Link href="/categories" className="w-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 py-3 rounded-full font-medium shadow-md hover:brightness-110 transition mt-3 block text-center">📁 Manage Categories</Link>
-          </>
+            <Link 
+               href="/categories"
+                className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 text-white py-3 rounded-full font-medium shadow-md hover:brightness-110 transition mt-3 block text-center"
+              >
+               ➕ Add / Manage Categories
+               </Link>
+            </>
         ) : (
           <div className="bg-gray-800/60 p-5 mt-5 rounded-2xl shadow-xl border border-gray-700 text-left">
             <select value={entryType} onChange={(e) => setEntryType(e.target.value as EntryType)} className="w-full p-2 mb-3 rounded bg-gray-700 text-white">

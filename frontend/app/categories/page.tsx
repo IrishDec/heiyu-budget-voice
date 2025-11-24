@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-// 👇 FIX: Using Supabase functions
+// 👇 Using Supabase functions
 import { fetchCategories, updateCategories } from "../../lib/store";
 
 export default function CategoriesPage() {
@@ -13,6 +13,7 @@ export default function CategoriesPage() {
   
   const [renaming, setRenaming] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
+  const [newCategory, setNewCategory] = useState("");
 
   // 🔄 Load Categories from DB
   useEffect(() => {
@@ -26,14 +27,34 @@ export default function CategoriesPage() {
     loadData();
   }, []);
 
-  // Helper to update state and DB
+  // Helper to update state + DB
   const updateStore = async (inc: string[], exp: string[]) => {
-    // Optimistic UI update
     setIncome(inc);
     setExpense(exp);
-    
-    // Save to DB
     await updateCategories({ incomeCategories: inc, expenseCategories: exp });
+  };
+
+  // 👉 Add Category (new)
+  const handleAddCategory = async () => {
+    if (!newCategory.trim()) return;
+
+    const formatted = newCategory
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(" ");
+
+    // Default: goes to Expense unless it includes Income
+    let updatedIncome = [...income];
+    let updatedExpense = [...expense];
+
+    if (formatted.toLowerCase().includes("income")) {
+      updatedIncome.push(formatted);
+    } else {
+      updatedExpense.push(formatted);
+    }
+
+    await updateStore(updatedIncome, updatedExpense);
+    setNewCategory("");
   };
 
   const handleDelete = async (type: "income" | "expense", name: string) => {
@@ -81,6 +102,23 @@ export default function CategoriesPage() {
         </Link>
 
         <h1 className="text-2xl font-bold mt-3 mb-6">Manage Categories</h1>
+
+        {/* NEW CATEGORY INPUT — UI STYLE MATCHES YOUR PAGE */}
+        <h2 className="text-lg font-semibold text-indigo-400 mb-2">Add New Category</h2>
+        <div className="flex gap-2 mb-8">
+          <input
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
+            placeholder="New category"
+            className="flex-1 bg-gray-700 text-white p-2 rounded"
+          />
+          <button
+            onClick={handleAddCategory}
+            className="bg-indigo-500 px-4 py-2 rounded text-white text-sm"
+          >
+            Add
+          </button>
+        </div>
 
         {/* Income */}
         <h2 className="text-lg font-semibold text-emerald-400 mb-2">Income</h2>
