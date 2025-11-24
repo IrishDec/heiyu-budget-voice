@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "About Heiyu Taxi | Built by a Driver, For Drivers",
-  description: "Heiyu Taxi was built by a Dublin taxi driver with 14 years of experience. The ultimate voice-powered income and expense tracker for gig workers worldwide.",
+  title: "About Heiyu Budget | Built by a Driver, For Drivers",
+  description: "Heiyu budget was built by a Dublin taxi driver with 14 years of experience. The ultimate voice-powered income and expense tracker for gig workers worldwide.",
 };
 
 export default function AboutPage() {

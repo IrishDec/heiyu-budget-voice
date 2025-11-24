@@ -17,10 +17,10 @@ export default function ContactPage() {
         <div className="bg-[#1e293b] p-6 rounded-2xl border border-gray-700 mb-8 text-center">
           <p className="text-gray-400 text-sm mb-2">General Inquiries & Support</p>
           <a 
-            href="mailto:support@heiyutaxi.com" 
+            href="#" 
             className="text-2xl font-bold text-indigo-400 hover:text-indigo-300 transition"
           >
-            support@heiyutaxi.com
+            #
           </a>
         </div>
 

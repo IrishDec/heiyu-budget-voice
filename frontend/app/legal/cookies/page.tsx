@@ -6,7 +6,7 @@ export default function Cookies() {
       <h1 className="text-3xl font-bold text-white mb-6">Cookie Policy</h1>
       
       <p className="mb-4">
-        Heiyu Taxi believes in keeping things simple. We use a minimal number of cookies strictly necessary for the app to function.
+        Heiyu Budget believes in keeping things simple. We use a minimal number of cookies strictly necessary for the app to function.
       </p>
 
       <h2 className="text-xl font-semibold text-white mt-8 mb-3">1. Essential Cookies</h2>

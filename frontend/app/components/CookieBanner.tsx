@@ -27,7 +27,7 @@ export default function CookieBanner() {
         <div className="text-xs text-gray-300 text-center md:text-left">
           <p>
             We use strictly necessary cookies to keep you logged in and save your preferences. 
-            We do not track you. By using Heiyu Taxi, you agree to our 
+            We do not track you. By using Heiyu Budget, you agree to our 
             <Link href="/legal/cookies" className="text-indigo-400 hover:text-indigo-300 ml-1 underline">
               Cookie Policy
             </Link>.
