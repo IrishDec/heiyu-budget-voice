@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-// 👇 Using Supabase functions
 import { fetchCategories, updateCategories } from "../../lib/store";
 
 export default function CategoriesPage() {
@@ -13,28 +12,32 @@ export default function CategoriesPage() {
   
   const [renaming, setRenaming] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
-  const [newCategory, setNewCategory] = useState("");
 
-  // 🔄 Load Categories from DB
+  const [newCategory, setNewCategory] = useState("");
+  const [newType, setNewType] = useState<"Income" | "Expense">("Expense"); // ⭐ NEW TOGGLE
+
+  // Load from DB
   useEffect(() => {
     setMounted(true);
-    const loadData = async () => {
+    const load = async () => {
       const data = await fetchCategories();
       setIncome(data.incomeCategories);
       setExpense(data.expenseCategories);
       setLoading(false);
     };
-    loadData();
+    load();
   }, []);
 
-  // Helper to update state + DB
   const updateStore = async (inc: string[], exp: string[]) => {
     setIncome(inc);
     setExpense(exp);
-    await updateCategories({ incomeCategories: inc, expenseCategories: exp });
+    await updateCategories({
+      incomeCategories: inc,
+      expenseCategories: exp,
+    });
   };
 
-  // 👉 Add Category (new)
+  // ⭐ FIXED: Add with proper toggle
   const handleAddCategory = async () => {
     if (!newCategory.trim()) return;
 
@@ -43,11 +46,10 @@ export default function CategoriesPage() {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
       .join(" ");
 
-    // Default: goes to Expense unless it includes Income
     let updatedIncome = [...income];
     let updatedExpense = [...expense];
 
-    if (formatted.toLowerCase().includes("income")) {
+    if (newType === "Income") {
       updatedIncome.push(formatted);
     } else {
       updatedExpense.push(formatted);
@@ -86,13 +88,18 @@ export default function CategoriesPage() {
         expense.map((c) => (c === oldName ? formatted : c))
       );
     }
-    
+
     setRenaming(null);
     setNewName("");
   };
 
   if (!mounted) return <div className="min-h-screen bg-[#0f172a]" />;
-  if (loading) return <div className="min-h-screen bg-[#0f172a] text-white flex items-center justify-center">Loading categories...</div>;
+  if (loading)
+    return (
+      <div className="min-h-screen bg-[#0f172a] text-white flex items-center justify-center">
+        Loading categories...
+      </div>
+    );
 
   return (
     <main className="min-h-screen bg-[#0f172a] text-white px-4 py-10">
@@ -103,9 +110,12 @@ export default function CategoriesPage() {
 
         <h1 className="text-2xl font-bold mt-3 mb-6">Manage Categories</h1>
 
-        {/* NEW CATEGORY INPUT — UI STYLE MATCHES YOUR PAGE */}
-        <h2 className="text-lg font-semibold text-indigo-400 mb-2">Add New Category</h2>
-        <div className="flex gap-2 mb-8">
+        {/* ⭐ NEW CATEGORY INPUT WITH TYPE TOGGLE */}
+        <h2 className="text-lg font-semibold text-indigo-400 mb-2">
+          Add New Category
+        </h2>
+
+        <div className="flex gap-2 mb-3">
           <input
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
@@ -120,11 +130,37 @@ export default function CategoriesPage() {
           </button>
         </div>
 
+        {/* ⭐ PRETTY TOGGLE MATCHING YOUR UI */}
+        <div className="flex gap-4 mb-8 text-sm">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="type"
+              checked={newType === "Income"}
+              onChange={() => setNewType("Income")}
+            />
+            <span className="text-emerald-400">Income</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="type"
+              checked={newType === "Expense"}
+              onChange={() => setNewType("Expense")}
+            />
+            <span className="text-pink-400">Expense</span>
+          </label>
+        </div>
+
         {/* Income */}
         <h2 className="text-lg font-semibold text-emerald-400 mb-2">Income</h2>
         <ul className="mb-8 space-y-2">
           {income.map((c) => (
-            <li key={c} className="flex justify-between items-center bg-gray-800 p-2 rounded-lg">
+            <li
+              key={c}
+              className="flex justify-between items-center bg-gray-800 p-2 rounded-lg"
+            >
               {renaming === c ? (
                 <input
                   value={newName}
@@ -170,7 +206,10 @@ export default function CategoriesPage() {
         <h2 className="text-lg font-semibold text-pink-400 mb-2">Expense</h2>
         <ul className="space-y-2">
           {expense.map((c) => (
-            <li key={c} className="flex justify-between items-center bg-gray-800 p-2 rounded-lg">
+            <li
+              key={c}
+              className="flex justify-between items-center bg-gray-800 p-2 rounded-lg"
+            >
               {renaming === c ? (
                 <input
                   value={newName}
@@ -200,6 +239,7 @@ export default function CategoriesPage() {
                     Rename
                   </button>
                 )}
+
                 <button
                   onClick={() => handleDelete("expense", c)}
                   className="text-red-400 text-sm"
