@@ -81,11 +81,33 @@ export default function Menu() {
             className="w-full bg-gray-900 text-white border border-gray-700 rounded p-2 text-sm"
           >
             <option value="€">Euro (€) - Europe</option>
-            <option value="$">Dollar ($) - USA</option>
+            <option value="$">Dollar ($) - USA/Global</option>
             <option value="£">Pound (£) - UK</option>
-            <option value="¥">Yen/Yuan (¥)</option>
-            <option value="₹">Rupee (₹)</option>
-          </select>
+           <option value="¥">Yen/Yuan (¥) - Japan/China</option>
+           <option value="₹">Rupee (₹) - India</option>
+           <option value="A$">Dollar (A$) - Australia</option>
+          <option value="C$">Dollar (C$) - Canada</option>
+           <option value="₣">Franc (₣) - Switzerland/West Africa</option>
+           <option value="kr">Kroner (kr) - Scandinavia</option>
+           <option value="R">Rand (R) - South Africa</option>
+           <option value="R$">Real (R$) - Brazil</option>
+           <option value="₱">Peso (₱) - Philippines/Latin Am.</option>
+           <option value="Rp">Rupiah (Rp) - Indonesia</option>
+           <option value="฿">Baht (฿) - Thailand</option>
+           <option value="₫">Dong (₫) - Vietnam</option>
+          <option value="RM">Ringgit (RM) - Malaysia</option>
+          <option value="₦">Naira (₦) - Nigeria</option>
+          <option value="₵">Cedi (₵) - Ghana</option>
+          <option value="KSh">Shilling (KSh) - Kenya</option>
+          <option value="dh">Dirham (dh) - UAE/Morocco</option>
+          <option value="SR">Riyal (SR) - Saudi Arabia</option>
+         <option value="₺">Lira (₺) - Turkey</option>
+         <option value="₩">Won (₩) - South Korea</option>
+         <option value="zł">Złoty (zł) - Poland</option>
+         <option value="S$">Dollar (S$) - Singapore</option>
+        <option value="NZ$">Dollar (NZ$) - New Zealand</option>
+        <option value="HK$">Dollar (HK$) - Hong Kong</option>
+        </select>
         </div>
 
         {/* Nav */}
