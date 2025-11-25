@@ -178,14 +178,22 @@ export default function Home() {
     );
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white px-4 py-10">
-      <Menu />
+         <main className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white px-4 py-10">
+  <Menu />
 
-      <div className="w-full max-w-sm text-center mx-auto">
+  {/* USER GREETING */}
+  {userEmail && (
+    <p className="text-sm text-gray-400 mb-3 px-1">
+      Hey {userEmail.split("@")[0]} 👋
+    </p>
+  )}
 
-        <h1 className="text-3xl font-bold mb-2">
-          Heiyu<span className="text-indigo-400">Budget</span>
-        </h1>
+  <div className="w-full max-w-sm text-center mx-auto">
+
+    <h1 className="text-3xl font-bold mb-2">
+      Heiyu<span className="text-indigo-400">Budget</span>
+    </h1>
+
 
         <p className="text-gray-400 text-sm mb-6">Fast voice or text budgeting.</p>
 
