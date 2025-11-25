@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import FooterNote from "./components/FooterNote";
-import CookieBanner from "./components/CookieBanner"; // 👈 IMPORT THIS
+import CookieBanner from "./components/CookieBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,9 +17,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Heiyu Budget",
   description: "Fast voice or text budgeting app.",
-   icons: {
+  icons: {
     icon: "/updates/icon.png",
- },
+  },
 };
 
 export default function RootLayout({
@@ -29,12 +29,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        {/* Google AdSense */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5334553173304707"
+          crossOrigin="anonymous"
+        ></script>
+      </head>
+
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
         <FooterNote />
-        <CookieBanner /> {/* 👈 ADD THIS HERE */}
+        <CookieBanner />
       </body>
     </html>
   );
 }
+
 
