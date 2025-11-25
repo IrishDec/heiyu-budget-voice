@@ -57,7 +57,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-2xl bg-[#1e293b] p-8 shadow-2xl border border-gray-700">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
-            Heiyu<span className="text-indigo-400">Taxi</span>
+            Heiyu<span className="text-indigo-400">Budget</span>
           </h1>
           <p className="text-gray-400 text-sm">
             {view === "forgot" ? "Reset your password" : "Sign in to sync your tax records."}
