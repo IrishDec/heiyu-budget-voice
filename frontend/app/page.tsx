@@ -188,7 +188,8 @@ export default function Home() {
   {/* USER GREETING */}
   {userEmail && (
     <p className="text-sm text-gray-400 mb-3 px-1">
-      Hey {userEmail.split("@")[0]} 👋
+      Hey {userName || userEmail} 👋
+
     </p>
   )}
 
