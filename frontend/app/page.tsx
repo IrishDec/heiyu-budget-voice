@@ -42,6 +42,9 @@ export default function Home() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userName, setUserName] = useState("");
+
+
   
   // Currency
   const [currency, setCurrency] = useState("€");
@@ -57,6 +60,7 @@ export default function Home() {
     const loadData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUserEmail(user?.email ?? null);
+      setUserName(user?.user_metadata?.name ?? "");   
 
       const cats = await fetchCategories();
       setCategories(cats);
