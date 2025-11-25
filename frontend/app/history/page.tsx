@@ -255,48 +255,79 @@ export default function HistoryPage() {
         ))}
       </div>
 
-     {/* 3. MANAGEMENT BUTTONS */}
+{/* 3. MANAGEMENT BUTTONS */}
 <div className="flex justify-between items-center mb-2 px-1">
   <Link href="/categories" className="text-xs text-indigo-400 font-semibold hover:text-indigo-300">
       ⚙️ Manage Categories
   </Link>
 </div>
 
-      {/* 4. DROPDOWN FILTERS */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="relative">
-            <select
-                value={filterType === "Income" ? selectedCategory : "All"}
-                onChange={handleIncomeSelect}
-                className={`w-full appearance-none bg-gray-800 text-sm p-3 rounded-xl border focus:outline-none transition ${
-                    filterType === "Income" 
-                    ? "border-emerald-500 text-emerald-400 font-bold" 
-                    : "border-gray-700 text-gray-400"
-                }`}
-            >
-                <option value="All">All Income</option>
-                {categories.incomeCategories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                ))}
-            </select>
-        </div>
-        <div className="relative">
-            <select
-                value={filterType === "Expense" ? selectedCategory : "All"}
-                onChange={handleExpenseSelect}
-                className={`w-full appearance-none bg-gray-800 text-sm p-3 rounded-xl border focus:outline-none transition ${
-                    filterType === "Expense" 
-                    ? "border-pink-500 text-pink-400 font-bold" 
-                    : "border-gray-700 text-gray-400"
-                }`}
-            >
-                <option value="All">All Expenses</option>
-                {categories.expenseCategories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                ))}
-            </select>
-        </div>
-      </div>
+{/* 4. DROPDOWN FILTERS */}
+<div className="grid grid-cols-2 gap-3 mb-6">
+  <div className="relative">
+      <select
+          value={filterType === "Income" ? selectedCategory : "All"}
+          onChange={handleIncomeSelect}
+          className={`w-full appearance-none bg-gray-800 text-sm p-3 rounded-xl border focus:outline-none transition ${
+              filterType === "Income" 
+              ? "border-emerald-500 text-emerald-400 font-bold" 
+              : "border-gray-700 text-gray-400"
+          }`}
+      >
+          <option value="All">All Income</option>
+          {categories.incomeCategories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+          ))}
+      </select>
+  </div>
+
+  <div className="relative">
+      <select
+          value={filterType === "Expense" ? selectedCategory : "All"}
+          onChange={handleExpenseSelect}
+          className={`w-full appearance-none bg-gray-800 text-sm p-3 rounded-xl border focus:outline-none transition ${
+              filterType === "Expense" 
+              ? "border-pink-500 text-pink-400 font-bold" 
+              : "border-gray-700 text-gray-400"
+          }`}
+      >
+          <option value="All">All Expenses</option>
+          {categories.expenseCategories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+          ))}
+      </select>
+  </div>
+</div>
+
+{/* RESET FILTERS BUTTON */}
+<div className="flex justify-end mb-4">
+  <button
+    onClick={() => {
+      setTimeFilter("Week");
+      setFilterType("All");
+      setSelectedCategory("All");
+    }}
+    className="text-xs text-gray-400 underline hover:text-white transition"
+  >
+    Reset Filters
+  </button>
+</div>
+
+
+{/* RESET FILTERS BUTTON */}
+<div className="flex justify-end mb-4">
+  <button
+    onClick={() => {
+      setTimeFilter("Week");
+      setFilterType("All");
+      setSelectedCategory("All");
+    }}
+    className="text-xs text-gray-400 underline hover:text-white transition"
+  >
+    Reset Filters
+  </button>
+</div>
+
 
       {/* 5. SUMMARY CARD + EXPORT BUTTON */}
       <div className="bg-gray-800/80 rounded-2xl p-5 mb-6 border border-gray-700 shadow-xl">
