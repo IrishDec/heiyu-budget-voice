@@ -26,12 +26,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        {/* GOOGLE ADSENSE VERIFICATION */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5334553173304707"
-          crossOrigin="anonymous"
-        ></script>
+        {/* GOOGLE ADSENSE VERIFICATION TAG */}
+        <meta
+          name="google-adsense-account"
+          content="ca-pub-5334553173304707"
+        />
       </head>
 
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
