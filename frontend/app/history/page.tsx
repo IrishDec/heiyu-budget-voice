@@ -271,9 +271,9 @@ export default function HistoryPage() {
       setFilterType("All");
       setSelectedCategory("All");
     }}
-    className="text-xs text-gray-400 underline hover:text-white transition"
+   className="text-xs text-indigo-400 font-semibold hover:text-indigo-300 transition"
   >
-    Reset
+    Reset filters 
   </button>
 </div>
 
