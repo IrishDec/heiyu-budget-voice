@@ -257,9 +257,24 @@ export default function HistoryPage() {
 
 {/* 3. MANAGEMENT BUTTONS */}
 <div className="flex justify-between items-center mb-2 px-1">
-  <Link href="/categories" className="text-xs text-indigo-400 font-semibold hover:text-indigo-300">
-      ⚙️ Manage Categories
+  <Link
+    href="/categories"
+    className="text-xs text-indigo-400 font-semibold hover:text-indigo-300"
+  >
+    ⚙️ Manage Categories
   </Link>
+
+  {/* RESET BUTTON (RIGHT SIDE) */}
+  <button
+    onClick={() => {
+      setTimeFilter("Week");
+      setFilterType("All");
+      setSelectedCategory("All");
+    }}
+    className="text-xs text-gray-400 underline hover:text-white transition"
+  >
+    Reset
+  </button>
 </div>
 
 {/* 4. DROPDOWN FILTERS */}
@@ -298,36 +313,6 @@ export default function HistoryPage() {
       </select>
   </div>
 </div>
-
-{/* RESET FILTERS BUTTON */}
-<div className="flex justify-end mb-4">
-  <button
-    onClick={() => {
-      setTimeFilter("Week");
-      setFilterType("All");
-      setSelectedCategory("All");
-    }}
-    className="text-xs text-gray-400 underline hover:text-white transition"
-  >
-    Reset Filters
-  </button>
-</div>
-
-
-{/* RESET FILTERS BUTTON */}
-<div className="flex justify-end mb-4">
-  <button
-    onClick={() => {
-      setTimeFilter("Week");
-      setFilterType("All");
-      setSelectedCategory("All");
-    }}
-    className="text-xs text-gray-400 underline hover:text-white transition"
-  >
-    Reset Filters
-  </button>
-</div>
-
 
       {/* 5. SUMMARY CARD + EXPORT BUTTON */}
       <div className="bg-gray-800/80 rounded-2xl p-5 mb-6 border border-gray-700 shadow-xl">
