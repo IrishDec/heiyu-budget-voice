@@ -57,12 +57,20 @@ export default function Menu() {
           </button>
         </div>
 
-        {/* Greeting */}
-        {user && (
-          <div className="px-4 py-3 text-sm text-indigo-300 border-b border-gray-800">
-            👋 Hey {user.email.split("@")[0]}
-          </div>
-        )}
+      {/* Greeting */}
+<div className="px-4 py-3 text-sm text-indigo-300 border-b border-gray-800">
+  {user && user.user_metadata?.name ? (
+    <span>👤 {user.user_metadata.name}</span>
+  ) : user ? (
+    <Link
+      href="/profile"
+      onClick={() => setOpen(false)}
+      className="text-indigo-400 hover:text-indigo-200 underline"
+    >
+      👤 Add your name
+    </Link>
+  ) : null}
+</div>
 
         {/* Currency */}
         <div className="px-4 py-4 border-b border-gray-800">
