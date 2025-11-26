@@ -1,71 +1,66 @@
 "use client";
 
-interface HelpSheetProps {
-  open: boolean;
-  onClose: () => void;
-}
-
-export default function HelpSheet({ open, onClose }: HelpSheetProps) {
+export default function HelpSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end">
-      {/* Backdrop */}
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" onClick={onClose}>
       <div
-        className="absolute inset-0 bg-black/60"
-        onClick={onClose}
-      />
+        className="absolute bottom-0 left-0 right-0 bg-[#0f172a] rounded-t-2xl p-6 text-gray-300 max-h-[85vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-xl font-semibold text-indigo-300 mb-4">How to Use HeiyuBudget</h2>
 
-      {/* Sheet */}
-      <div className="relative bg-[#0f172a] w-full p-6 rounded-t-2xl border-t border-gray-700 animate-slideUp">
-        
-        {/* Drag handle */}
-        <div className="w-12 h-1.5 bg-gray-600 rounded-full mx-auto mb-4" />
+        {/* VOICE INPUT */}
+        <h3 className="text-indigo-200 font-bold mt-4 mb-2">📢 How to use voice input</h3>
+        <p className="text-sm mb-2">
+          Say entries like:
+          <br />• <strong>“Income 20 point 60 salary”</strong>
+          <br />• <strong>“Expense 3 point 60 coffee”</strong>
+        </p>
+        <p className="text-sm mb-4">
+          Start with <strong>Income</strong> or <strong>Expense</strong>, then the amount, then the category.
+          For decimals say: <strong>“point 60”</strong>.
+          Finish with the category name.
+        </p>
 
-        <h2 className="text-xl font-bold mb-4 text-indigo-300 text-center">
-          Help & Tips
-        </h2>
+        {/* MANUAL */}
+        <h3 className="text-indigo-200 font-bold mt-4 mb-2">📝 Manual Input</h3>
+        <p className="text-sm mb-4">
+          Tap <strong>Add / Manage</strong> → choose type → enter amount, category, notes → Save.
+        </p>
 
-        <div className="text-gray-300 space-y-4 text-sm">
+        {/* HISTORY */}
+        <h3 className="text-indigo-200 font-bold mt-4 mb-2">📊 History & Filters</h3>
+        <p className="text-sm mb-4">
+          Switch between <strong>Day / Week / Month / Year</strong>.  
+          Tap any entry to <strong>edit or delete</strong>.  
+          Tap <strong>Reset Filters</strong> to show all income and expenses again.
+        </p>
 
-          <div>
-            <h3 className="font-semibold text-indigo-400">🎙 Voice Input</h3>
-            <p>Say: <strong>income/expense + amount + category</strong></p>
-            <p className="mt-1 text-gray-400 text-xs">
-              Example: “Expense 12 coffee” • “Income 50 street cash”
-            </p>
-          </div>
+        {/* PROFILE */}
+        <h3 className="text-indigo-200 font-bold mt-4 mb-2">👤 Profile</h3>
+        <p className="text-sm mb-4">
+          Add your name for a personal greeting.  
+          Change currency anytime.  
+          Logout anytime.
+        </p>
 
-          <div>
-            <h3 className="font-semibold text-indigo-400">✏️ Text Input</h3>
-            <p>Type the same format as voice.</p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-indigo-400">🏷 Categories</h3>
-            <p>Add/edit categories any time. They control filtering and graphs.</p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-indigo-400">📊 Weekly Graphs</h3>
-            <p>Bars show total income/expense for each day of the week.</p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-indigo-400">🔄 Refresh App</h3>
-            <p>Use “Refresh App” in the menu to get new updates.</p>
-          </div>
-
-        </div>
+        {/* REFRESH */}
+        <h3 className="text-indigo-200 font-bold mt-4 mb-2">🔄 Refresh & Updates</h3>
+        <p className="text-sm mb-4">
+          Tap <strong>Refresh</strong> in the menu to load the latest version of the app.  
+          Check the <strong>Updates</strong> section in the footer to see new features.
+        </p>
 
         <button
           onClick={onClose}
-          className="w-full mt-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold"
+          className="w-full mt-4 py-2 bg-indigo-600 rounded-lg text-white font-semibold"
         >
-          Got it
+          Close
         </button>
-
       </div>
     </div>
   );
 }
+
