@@ -45,17 +45,21 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState("");
+  const [incomeGraph, setIncomeGraph] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  const [expenseGraph, setExpenseGraph] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
 
-
-  
   // Currency
   const [currency, setCurrency] = useState("€");
 
-  // Refresh entries
-  const refreshData = async () => {
-    const data = await fetchEntries();
-    setEntries(data);
-  };
+ const refreshData = async () => {
+  const data = await fetchEntries();
+  setEntries(data);
+
+  // Update weekly graphs
+  setIncomeGraph(getLast7DaysTotals(data, "Income"));
+  setExpenseGraph(getLast7DaysTotals(data, "Expense"));
+};
+
 
   // On load
   useEffect(() => {
@@ -176,12 +180,29 @@ export default function Home() {
   const incomeTotals = sumFor("Income");
   const expenseTotals = sumFor("Expense");
 
+    // Get totals for last 7 days (Mon–Sun)
+  function getLast7DaysTotals(entries: Entry[], type: EntryType) {
+    const totals = [0, 0, 0, 0, 0, 0, 0]; // Mon → Sun
+
+    entries
+      .filter((e) => e.type === type)
+      .forEach((e) => {
+        const d = new Date(e.created_at);
+        const day = d.getDay(); // 0=Sun..6=Sat
+        const index = day === 0 ? 6 : day - 1; // convert Sun to last
+        totals[index] += parseFloat(e.amount) || 0;
+      });
+
+    return totals;
+  }
+
   if (loading)
     return (
       <div className="min-h-screen bg-[#0f172a] text-white flex items-center justify-center">
         Loading...
       </div>
     );
+    
 
   return (
          <main className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white px-4 py-10">
@@ -347,7 +368,9 @@ export default function Home() {
     {/* Income */}
     <div className="text-center shadow-md shadow-black/20 p-2 rounded-xl">
       <p className="text-xs text-emerald-300 mb-1">Income</p>
-      <MiniWeeklyBars data={[80, 40, 120, 60, 200, 90, 50]} color="emerald" />
+      <MiniWeeklyBars data={incomeGraph} color="emerald" />
+
+
       <div className="flex justify-between text-[10px] text-gray-500 mt-1">
         {["M","T","W","T","F","S","S"].map((d,i)=>(
           <span key={i} className="w-2 text-center">{d}</span>
@@ -358,7 +381,7 @@ export default function Home() {
     {/* Expense */}
     <div className="text-center shadow-md shadow-black/20 p-2 rounded-xl border-l border-gray-700/60">
       <p className="text-xs text-pink-300 mb-1">Expense</p>
-      <MiniWeeklyBars data={[20, 140, 220, 180, 60, 30, 10]} color="pink" />
+     <MiniWeeklyBars data={expenseGraph} color="pink" />
       <div className="flex justify-between text-[10px] text-gray-500 mt-1">
         {["M","T","W","T","F","S","S"].map((d,i)=>(
           <span key={i} className="w-2 text-center">{d}</span>
