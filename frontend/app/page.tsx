@@ -180,21 +180,32 @@ export default function Home() {
   const incomeTotals = sumFor("Income");
   const expenseTotals = sumFor("Expense");
 
-    // Get totals for last 7 days (Mon–Sun)
-  function getLast7DaysTotals(entries: Entry[], type: EntryType) {
-    const totals = [0, 0, 0, 0, 0, 0, 0]; // Mon → Sun
+  // Get totals for last 7 days (Mon–Sun) — timezone-safe
+function getLast7DaysTotals(entries: Entry[], type: EntryType) {
+  const totals = [0, 0, 0, 0, 0, 0, 0]; // Mon..Sun
 
-    entries
-      .filter((e) => e.type === type)
-      .forEach((e) => {
-        const d = new Date(e.created_at);
-        const day = d.getDay(); // 0=Sun..6=Sat
-        const index = day === 0 ? 6 : day - 1; // convert Sun to last
-        totals[index] += parseFloat(e.amount) || 0;
-      });
+  entries
+    .filter((e) => e.type === type)
+    .forEach((e) => {
+      // Read date but force local day safely
+      const d = new Date(e.created_at);
+      
+      // Convert UTC timestamp to local midnight (no shifting)
+      const local = new Date(
+        d.getFullYear(),
+        d.getMonth(),
+        d.getDate()
+      );
 
-    return totals;
-  }
+      // 0 = Sunday → we want Sunday last
+      const jsDay = local.getDay(); 
+      const index = jsDay === 0 ? 6 : jsDay - 1;
+
+      totals[index] += parseFloat(e.amount) || 0;
+    });
+
+  return totals;
+}
 
   if (loading)
     return (
