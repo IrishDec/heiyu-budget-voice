@@ -125,8 +125,15 @@ export default function Menu() {
               🏷️ Categories
             </Link>
           </div>
-
-          {/* Auth */}
+          {/* Refresh App */}
+           <button
+              onClick={() => window.location.reload()}
+              className="block w-full text-center py-2 rounded-lg bg-gray-800/40 text-gray-300 
+             hover:bg-gray-800 hover:text-white transition text-sm font-semibold mb-3"
+            >
+          🔄 Refresh App
+          </button>
+           {/* Auth */}
           <div className="pt-4 mt-2">
             {user ? (
               <button

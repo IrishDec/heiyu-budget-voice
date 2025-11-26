@@ -28,7 +28,8 @@ export function parseVoiceInput(spokenText: string): ParseResult {
   if (!type) {
     return {
       success: false,
-      error: "Please start with 'Income' or 'Expense'.\nExample: Income 20 Street cash"
+     error: "For amounts like 20.60, say it as: Income 20 point 60 groceries\n(Income/Expense + amount + category)"
+
     };
   }
 
