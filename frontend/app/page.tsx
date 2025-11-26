@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Menu from "./components/Menu";
 import Link from "next/link";
+import HelpSheet from "./components/HelpSheet";
+
 
 // Imports
 import { 
@@ -35,6 +37,8 @@ export default function Home() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [notes, setNotes] = useState("");
+  const [helpOpen, setHelpOpen] = useState(false);
+
 
   const [categories, setCategories] = useState<CategoryState>({
     incomeCategories: [],
@@ -432,6 +436,15 @@ function getLast7DaysTotals(entries: Entry[], type: EntryType) {
         )}
 
       </div>
+<button 
+  onClick={() => setHelpOpen(true)} 
+  className="fixed bottom-6 right-6 p-3 rounded-full bg-indigo-600 text-white"
+>
+  ?
+</button>
+
+<HelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} />
+
     </main>
   );
 }
