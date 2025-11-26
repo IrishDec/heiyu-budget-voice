@@ -16,6 +16,8 @@ import {
 import { parseVoiceInput } from "../lib/voiceUtils";
 import { Entry, EntryType, CategoryState } from "../lib/types";
 import { supabase } from "../lib/supabaseClient";
+import MiniWeeklyBars from "./components/MiniWeeklyBars";
+
 
 interface SpeechRecognitionEventLike extends Event {
   results: {
@@ -308,38 +310,68 @@ export default function Home() {
           </div>
         )}
 
-        {/* TOTALS */}
-        <div className="bg-gray-800/60 p-5 mt-6 rounded-2xl border border-gray-700 text-center">
-          <div className="flex justify-between items-center mb-4 w-full">
-            <h3 className="text-lg font-semibold text-indigo-300">Totals Summary</h3>
-            <Link href="/history" className="text-xs text-indigo-400 hover:text-indigo-300 transition">
-              View All →
-            </Link>
-          </div>
+    {/* TOTALS */}
+<div className="bg-gray-800/60 p-5 mt-6 rounded-2xl border border-gray-700 text-center">
+  <div className="flex justify-between items-center mb-4 w-full">
+    <h3 className="text-lg font-semibold text-indigo-300">Totals Summary</h3>
+    <Link href="/history" className="text-xs text-indigo-400 hover:text-indigo-300 transition">
+      View All →
+    </Link>
+  </div>
 
-          <div className="grid grid-cols-4 text-sm font-semibold text-gray-300 mb-3">
-            <div></div>
-            <div>Today</div>
-            <div>Week</div>
-            <div>Month</div>
-          </div>
+  {/* HEADERS */}
+  <div className="grid grid-cols-3 text-sm font-semibold text-gray-300 mb-3">
+    <div></div>
+    <div>Today</div>
+    <div>Week</div>
+  </div>
 
-          <div className="grid grid-cols-4 text-sm items-center mb-2">
-            <div className="text-emerald-400 font-medium">Income</div>
-            <div>{currency}{incomeTotals.today.toFixed(2)}</div>
-            <div>{currency}{incomeTotals.week.toFixed(2)}</div>
-            <div>{currency}{incomeTotals.month.toFixed(2)}</div>
-          </div>
+  {/* INCOME */}
+  <div className="grid grid-cols-3 text-sm items-center mb-2">
+    <div className="text-emerald-400 font-medium">Income</div>
+    <div>{currency}{incomeTotals.today.toFixed(2)}</div>
+    <div>{currency}{incomeTotals.week.toFixed(2)}</div>
+  </div>
 
-          <div className="grid grid-cols-4 text-sm items-center">
-            <div className="text-pink-400 font-medium">Expense</div>
-            <div>{currency}{expenseTotals.today.toFixed(2)}</div>
-            <div>{currency}{expenseTotals.week.toFixed(2)}</div>
-            <div>{currency}{expenseTotals.month.toFixed(2)}</div>
-          </div>
-        </div>
+  {/* EXPENSE */}
+  <div className="grid grid-cols-3 text-sm items-center">
+    <div className="text-pink-400 font-medium">Expense</div>
+    <div>{currency}{expenseTotals.today.toFixed(2)}</div>
+    <div>{currency}{expenseTotals.week.toFixed(2)}</div>
+  </div>
+</div>
+{/* WEEKLY GRAPHS SIDE-BY-SIDE */}
+<div className="bg-gray-800/60 p-4 mt-4 rounded-2xl border border-gray-700">
+  <div className="grid grid-cols-2 gap-4">
 
-        {/* RECENT ENTRIES */}
+    {/* Income */}
+    <div className="text-center shadow-md shadow-black/20 p-2 rounded-xl">
+      <p className="text-xs text-emerald-300 mb-1">Income</p>
+      <MiniWeeklyBars data={[80, 40, 120, 60, 200, 90, 50]} color="emerald" />
+      <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+        {["M","T","W","T","F","S","S"].map((d,i)=>(
+          <span key={i} className="w-2 text-center">{d}</span>
+        ))}
+      </div>
+    </div>
+
+    {/* Expense */}
+    <div className="text-center shadow-md shadow-black/20 p-2 rounded-xl border-l border-gray-700/60">
+      <p className="text-xs text-pink-300 mb-1">Expense</p>
+      <MiniWeeklyBars data={[20, 140, 220, 180, 60, 30, 10]} color="pink" />
+      <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+        {["M","T","W","T","F","S","S"].map((d,i)=>(
+          <span key={i} className="w-2 text-center">{d}</span>
+        ))}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+   {/* RECENT ENTRIES */}
         {entries.length > 0 && (
           <div className="bg-gray-800/60 p-5 mt-8 rounded-2xl border border-gray-700 text-left">
             <div className="flex justify-between items-center mb-3 w-full">
