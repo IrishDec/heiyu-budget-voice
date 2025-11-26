@@ -13,6 +13,8 @@ import {
   getCurrency 
 } from "../../lib/store";
 import { Entry, EntryType, CategoryState } from "../../lib/types";
+import HelpSheet from "../components/HelpSheet";
+
 
 type TimeFilter = "Day" | "Week" | "Month" | "Year";
 
@@ -37,6 +39,8 @@ export default function HistoryPage() {
   const [editCategory, setEditCategory] = useState("");
   const [editDate, setEditDate] = useState("");
   const [editTime, setEditTime] = useState("");
+  const [helpOpen, setHelpOpen] = useState(false);
+
 
   // 🔄 Load from Database & Local Storage
   useEffect(() => {
@@ -439,6 +443,16 @@ export default function HistoryPage() {
           </div>
         </div>
       )}
+      <button
+  onClick={() => setHelpOpen(true)}
+  className="fixed bottom-6 right-6 z-40 h-14 w-14 flex items-center justify-center 
+             rounded-full bg-indigo-600 shadow-xl text-white text-2xl font-bold"
+>
+  ?
+</button>
+
+<HelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} />
+
     </main>
   );
 }
