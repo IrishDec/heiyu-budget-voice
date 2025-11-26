@@ -7,8 +7,8 @@ export default function MiniWeeklyBars({ data, color = "indigo" }: { data: numbe
     : "bg-indigo-500/70";
 
   return (
-    <div className="flex items-end gap-1 h-12">
-      {data.map((value, i) => {
+   <div className="flex items-end justify-around h-20 w-full">
+     {data.map((value, i) => {
         const height = (value / max) * 48;
         return (
           <div
