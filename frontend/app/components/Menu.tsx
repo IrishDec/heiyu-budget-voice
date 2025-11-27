@@ -11,11 +11,25 @@ export default function Menu() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    setCurrentCurrency(getCurrency());
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
-    });
-  }, []);
+  // Load currency
+  setCurrentCurrency(getCurrency());
+
+  // Load current user once
+  supabase.auth.getUser().then(({ data }) => {
+    setUser(data.user);
+  });
+
+  // 🔥 Listen for login/logout changes
+  const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    setUser(session?.user ?? null);
+  });
+
+  return () => {
+    listener.subscription.unsubscribe();
+  };
+}, []);
+
+
 
   const handleCurrencyChange = (e: any) => {
     saveCurrency(e.target.value);
