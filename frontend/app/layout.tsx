@@ -4,6 +4,11 @@ import "./globals.css";
 import FooterNote from "./components/FooterNote";
 import CookieBanner from "./components/CookieBanner";
 
+// 🔥 ADD THESE
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { pageview } from "./ga";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -23,9 +28,33 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+
+  // 🔥 ADD THIS
+  const pathname = usePathname();
+
+  // 🔥 ADD THIS
+  useEffect(() => {
+    pageview(pathname);
+  }, [pathname]);
+
   return (
     <html lang="en">
       <head>
+        {/* Google Analytics */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-4FG0YF84Q9"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-4FG0YF84Q9', {
+                page_path: window.location.pathname,
+              });
+            `,
+          }}
+        />
+
         {/* GOOGLE ADSENSE VERIFICATION TAG */}
         <meta
           name="google-adsense-account"
@@ -41,5 +70,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+
 
 
