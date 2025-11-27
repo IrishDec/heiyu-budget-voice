@@ -31,19 +31,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-       <script async src="https://www.googletagmanager.com/gtag/js?id=G-4TLH82SZF2"></script>
+{/* Google Analytics */}
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-FBJYR5B2DM"></script>
 <script
   dangerouslySetInnerHTML={{
     __html: `
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-4TLH82SZF2', {
-        page_path: window.location.pathname,
-      });
+      gtag('config', 'G-FBJYR5B2DM');
     `,
   }}
 />
+
    {/* GOOGLE ADSENSE VERIFICATION TAG */}
         <meta
           name="google-adsense-account"
