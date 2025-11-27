@@ -157,15 +157,26 @@ export default function Menu() {
           </button>
         </nav>
 
-        {/* LOGOUT */}
-        <div className="px-4 mt-6">
-          <button
-            onClick={handleLogout}
-            className="w-full text-center py-2 rounded-lg bg-red-600/20 text-red-300 hover:bg-red-600 hover:text-white transition"
-          >
-            🚪 Log Out
-          </button>
-        </div>
+        {/* AUTH BUTTONS */}
+<div className="px-4 mt-6">
+  {user ? (
+    <button
+      onClick={handleLogout}
+      className="w-full text-center py-2 rounded-lg bg-red-600/20 text-red-300 hover:bg-red-600 hover:text-white transition"
+    >
+      🚪 Log Out
+    </button>
+  ) : (
+    <Link
+      href="/login"
+      onClick={() => setOpen(false)}
+      className="w-full block text-center py-2 rounded-lg bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600 hover:text-white transition"
+    >
+      🔐 Login / Sign Up
+    </Link>
+  )}
+</div>
+
 
         {/* LEGAL */}
         <div className="mt-8 px-4 pt-4 border-t border-gray-800 text-[11px] text-gray-400 flex flex-col gap-2">
