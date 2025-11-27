@@ -31,22 +31,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Google Analytics */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-4FG0YF84Q9"></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-4FG0YF84Q9', {
-                page_path: window.location.pathname,
-              });
-            `,
-          }}
-        />
-
-        {/* GOOGLE ADSENSE VERIFICATION TAG */}
+       <script async src="https://www.googletagmanager.com/gtag/js?id=G-4TLH82SZF2"></script>
+<script
+  dangerouslySetInnerHTML={{
+    __html: `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-4TLH82SZF2', {
+        page_path: window.location.pathname,
+      });
+    `,
+  }}
+/>
+   {/* GOOGLE ADSENSE VERIFICATION TAG */}
         <meta
           name="google-adsense-account"
           content="ca-pub-5334553173304707"
