@@ -1,4 +1,5 @@
-export const GA_ID = "G-4FG0YF84Q9";
+export const GA_ID = "G-4TLH82SZF2";
+
 
 export const pageview = (url: string) => {
   if (typeof window !== "undefined" && (window as any).gtag) {
