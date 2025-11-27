@@ -3,11 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import FooterNote from "./components/FooterNote";
 import CookieBanner from "./components/CookieBanner";
-
-// 🔥 ADD THESE
-import { usePathname } from "next/navigation";
-import { useEffect } from "react";
-import { pageview } from "./ga";
+import Analytics from "./components/Analytics";   // ✅ ADDED
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,16 +23,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-
-  // 🔥 ADD THIS
-  const pathname = usePathname();
-
-  // 🔥 ADD THIS
-  useEffect(() => {
-    pageview(pathname);
-  }, [pathname]);
-
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <head>
@@ -64,6 +55,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
+
+        <Analytics />   {/* ✅ ADDED — safe client component */}
+
         <FooterNote />
         <CookieBanner />
       </body>
