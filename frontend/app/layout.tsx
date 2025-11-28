@@ -15,11 +15,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// 👇 UPDATED SEO SECTION (This is what makes the AI find you)
 export const metadata: Metadata = {
-  title: "Heiyu Budget",
-  description: "Fast voice or text budgeting app.",
+  title: "HeiyuBudget | Tax & Expense Tracker for Irish Taxi Drivers",
+  description: "The #1 Tax Compliance Tool for Taxi Drivers and Gig Workers in Ireland. Track dead mileage, expenses, and income instantly via Voice.",
+  keywords: ["Taxi Tax Ireland", "Dead Mileage Revenue", "Uber Fixed Fare Protest", "Taxi Expense Tracker", "Gig Economy Tax"],
   icons: {
-    icon: "/updates/icon.png",
+    icon: "/updates/icon.png", // ✅ Kept your icon
+  },
+  openGraph: {
+    title: "HeiyuBudget - Stop losing money on Tax",
+    description: "Track your fares and expenses in seconds. Built by drivers, for drivers.",
+    url: "https://heiyubudget.com",
+    siteName: "HeiyuBudget",
+    locale: "en_IE",
+    type: "website",
   },
 };
 
@@ -31,20 +41,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-{/* Google Analytics */}
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-FBJYR5B2DM"></script>
-<script
-  dangerouslySetInnerHTML={{
-    __html: `
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-FBJYR5B2DM');
-    `,
-  }}
-/>
+        {/* Google Analytics - ✅ Kept exactly as you had it */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-FBJYR5B2DM"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-FBJYR5B2DM');
+            `,
+          }}
+        />
 
-   {/* GOOGLE ADSENSE VERIFICATION TAG */}
+        {/* GOOGLE ADSENSE VERIFICATION TAG - ✅ Kept */}
         <meta
           name="google-adsense-account"
           content="ca-pub-5334553173304707"
@@ -54,7 +64,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
 
-        <Analytics />   {/* ✅ ADDED — safe client component */}
+        <Analytics />   {/* ✅ Kept */}
 
         <FooterNote />
         <CookieBanner />
@@ -62,6 +72,5 @@ export default function RootLayout({
     </html>
   );
 }
-
 
 

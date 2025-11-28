@@ -149,12 +149,16 @@ export default function Menu() {
           <Link href="/categories" onClick={() => setOpen(false)} className="block hover:text-indigo-300">
             🏷️ Categories
           </Link>
+          <Link href="/blog" onClick={() => setOpen(false)} className="block hover:text-indigo-300">
+            📰 Tax Tips & Blog
+          </Link>
           <button
             onClick={() => window.location.reload()}
             className="block text-left hover:text-indigo-300"
           >
             🔄 Refresh App
           </button>
+          
         </nav>
 
         {/* AUTH BUTTONS */}
