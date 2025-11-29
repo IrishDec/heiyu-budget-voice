@@ -243,7 +243,7 @@ function getLast7DaysTotals(entries: Entry[], type: EntryType) {
         {!userEmail && (
           <div className="mb-8 p-4 bg-indigo-900/30 border border-indigo-500/50 rounded-2xl">
             <p className="text-sm text-indigo-200 mb-3">
-              Sign in to save your tax records safely to the cloud.
+              Our tracker is FREE forever Sign up today.
             </p>
             <Link 
               href="/login"

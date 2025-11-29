@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 // 👇 UPDATED SEO SECTION (This is what makes the AI find you)
 export const metadata: Metadata = {
-  title: "HeiyuBudget | Tax & Expense Tracker for Irish Taxi Drivers",
+  title: "HeiyuBudget | Income & Expense Tracker fow Taxi drivers and gig workers and everyone else! ",
   description: "The #1 Tax Compliance Tool for Taxi Drivers and Gig Workers in Ireland. Track dead mileage, expenses, and income instantly via Voice.",
   keywords: ["Taxi Tax Ireland", "Dead Mileage Revenue", "Uber Fixed Fare Protest", "Taxi Expense Tracker", "Gig Economy Tax"],
   icons: {
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "HeiyuBudget - Stop losing money on Tax",
-    description: "Track your fares and expenses in seconds. Built by drivers, for drivers.",
+    description: "For Taxi and Gig workers and everyone else! Free forever Sign up today.",
     url: "https://heiyubudget.com",
     siteName: "HeiyuBudget",
     locale: "en_IE",
