@@ -17,11 +17,10 @@ export default function ContactForm({ onClose }: ContactFormProps) {
 
     const formData = new FormData(e.target);
 
-    // Web3Forms key
+    // REQUIRED FIELDS FOR WEB3FORMS
     formData.append("access_key", "4552e113-b8ed-4bce-9dde-ce725f43b955");
-
-    // Identify app
-    formData.append("app", "HeiyuBudget");
+    formData.append("subject", "New message from HeiyuBudget");
+    formData.append("from_name", formData.get("name") as string);
 
     try {
       const response = await fetch("https://api.web3forms.com/submit", {
@@ -34,11 +33,11 @@ export default function ContactForm({ onClose }: ContactFormProps) {
       if (data.success) {
         setResult("Success! We will be in touch soon.");
         e.target.reset();
-        if (onClose) setTimeout(() => onClose(), 1500);
+        setTimeout(() => onClose?.(), 1500);
       } else {
-        setResult("Something went wrong. Please try again later.");
+        setResult("Something went wrong. Please try again.");
       }
-    } catch (error) {
+    } catch {
       setResult("Connection error — please try again.");
     }
 
@@ -47,7 +46,6 @@ export default function ContactForm({ onClose }: ContactFormProps) {
 
   return (
     <div className="w-full max-w-md mx-auto bg-[#111] p-6 rounded-2xl border border-white/10 shadow-xl">
-      {/* HEADER */}
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-bold text-white">Send a Message</h3>
         {onClose && (
@@ -61,8 +59,6 @@ export default function ContactForm({ onClose }: ContactFormProps) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-
-        {/* NAME */}
         <div>
           <label className="block text-xs text-gray-400 mb-1 ml-1">NAME</label>
           <input
@@ -70,11 +66,9 @@ export default function ContactForm({ onClose }: ContactFormProps) {
             type="text"
             name="name"
             className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-3 text-white"
-            placeholder="John Doe"
           />
         </div>
 
-        {/* EMAIL */}
         <div>
           <label className="block text-xs text-gray-400 mb-1 ml-1">EMAIL</label>
           <input
@@ -82,11 +76,9 @@ export default function ContactForm({ onClose }: ContactFormProps) {
             type="email"
             name="email"
             className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-3 text-white"
-            placeholder="john@example.com"
           />
         </div>
 
-        {/* MESSAGE */}
         <div>
           <label className="block text-xs text-gray-400 mb-1 ml-1">MESSAGE</label>
           <textarea
@@ -94,11 +86,9 @@ export default function ContactForm({ onClose }: ContactFormProps) {
             name="message"
             rows={4}
             className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-3 text-white resize-none"
-            placeholder="How can we help?"
           />
         </div>
 
-        {/* BUTTONS */}
         <div className="flex gap-3">
           {onClose && (
             <button
@@ -119,7 +109,6 @@ export default function ContactForm({ onClose }: ContactFormProps) {
           </button>
         </div>
 
-        {/* RESULT */}
         {result && (
           <p
             className={`text-center text-sm mt-2 ${
