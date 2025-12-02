@@ -18,7 +18,7 @@ export default function ContactForm({ onClose }: ContactFormProps) {
     const formData = new FormData(e.target);
 
     // REQUIRED FIELDS FOR WEB3FORMS
-    formData.append("access_key", "4552e113-b8ed-4bce-9dde-ce725f43b955");
+    formData.append("access_key", "97aa634b-bb4d-420a-8337-24739f5948d4");
     formData.append("subject", "New message from HeiyuBudget");
     formData.append("from_name", formData.get("name") as string);
 
