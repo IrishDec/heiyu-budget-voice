@@ -150,8 +150,18 @@ export default function Menu() {
             🏷️ Categories
           </Link>
           <Link href="/blog" onClick={() => setOpen(false)} className="block hover:text-indigo-300">
-            📰 Tax Tips & Blog
+            📰 Blog
           </Link>
+          <button
+           onClick={() => {
+            setOpen(false);
+           window.dispatchEvent(new Event("open-contact"));
+            }}
+           className="block text-left hover:text-indigo-300"
+            >
+            📩 Contact Support
+            </button>
+
           <button
             onClick={() => window.location.reload()}
             className="block text-left hover:text-indigo-300"
