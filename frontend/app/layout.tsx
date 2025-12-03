@@ -4,10 +4,6 @@ import "./globals.css";
 import FooterNote from "./components/FooterNote";
 import CookieBanner from "./components/CookieBanner";
 import Analytics from "./components/Analytics";
-import ClientWrapper from "../app/ClientWrapper";
-
-
-
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -72,11 +68,7 @@ export default function RootLayout({
 
         {/* GA */}
         <Analytics />
-
-        {/* ↓ modal + contact button handled here */}
-        <ClientWrapper />
-
-        <FooterNote />
+           <FooterNote />
         <CookieBanner />
       </body>
     </html>
