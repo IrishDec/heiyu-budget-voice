@@ -152,20 +152,13 @@ export default function Menu() {
           <Link href="/blog" onClick={() => setOpen(false)} className="block hover:text-indigo-300">
             📰 Blog
           </Link>
-        <Link
-         href="https://www.heiyudigital.com/contact"
-         className="block text-left hover:text-indigo-300"
-         >
-        📩 Contact Support
-         </Link>
-          <button
-            onClick={() => window.location.reload()}
-            className="block text-left hover:text-indigo-300"
-          >
-            🔄 Refresh App
-          </button>
-          
-        </nav>
+      <Link 
+  href="https://www.heiyudigital.com/contact"
+  className="block text-left hover:text-indigo-300"
+>
+  📩 Contact Support
+</Link>
+  </nav>
 
         {/* AUTH BUTTONS */}
 <div className="px-4 mt-6">
