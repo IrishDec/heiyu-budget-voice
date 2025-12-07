@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "geist/font";
+
 import "./globals.css";
 import FooterNote from "./components/FooterNote";
 import CookieBanner from "./components/CookieBanner";
