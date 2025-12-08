@@ -1,19 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "geist/font";
+import { Inter } from "next/font/google";
 
 import "./globals.css";
 import FooterNote from "./components/FooterNote";
 import CookieBanner from "./components/CookieBanner";
 import Analytics from "./components/Analytics";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Replace Geist with Inter (stable + supported)
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-geist-sans", // keeps your existing CSS variable
 });
 
 export const metadata: Metadata = {
@@ -46,6 +42,7 @@ export default function RootLayout({
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-FBJYR5B2DM"
         ></script>
+
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -63,18 +60,18 @@ export default function RootLayout({
         />
       </head>
 
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {/* All pages */}
+      {/* FIXED: Inter replaces Geist */}
+      <body className={`${inter.variable} antialiased`}>
         {children}
 
-        {/* GA */}
         <Analytics />
-           <FooterNote />
+        <FooterNote />
         <CookieBanner />
       </body>
     </html>
   );
 }
+
 
 
 
