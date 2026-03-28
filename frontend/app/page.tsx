@@ -419,16 +419,16 @@ function getLast7DaysTotals(entries: Entry[], type: EntryType) {
               </Link>
             </div>
 
-             <ul className="max-h-40 overflow-y-auto">
-                     {entries.map((e, i) => (
-                     <li key={i} className="border-b border-gray-700 py-2">
-                       <p className="text-sm text-gray-200">
-                   <strong className={e.type === "Income" ? "text-emerald-400" : "text-pink-400"}>
-                 {e.type}:
-             </strong>{" "}
+           <ul className="max-h-40 overflow-y-auto">
+            {entries.map((e, i) => (
+             <li key={i} className="border-b border-gray-700 py-2">
+              <p className="text-sm text-gray-200">
+               <strong className={e.type === "Income" ? "text-emerald-400" : "text-pink-400"}>
+              {e.type}:
+           </strong>{" "}
           {e.category}{" "}
         <span className={e.type === "Income" ? "text-emerald-400 font-semibold" : "text-pink-400 font-semibold"}>
-          ({e.type === "Income" ? "+" : "-"}{currency}{parseFloat(e.amount).toFixed(2)})
+          {currency}{parseFloat(e.amount).toFixed(2)}
         </span>
       </p>
       <p className="text-xs text-gray-500">
