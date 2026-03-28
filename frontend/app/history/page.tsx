@@ -119,6 +119,18 @@ export default function HistoryPage() {
     {}
   );
 
+  const getDayTotals = (dayEntries: Entry[]) => {
+  const income = dayEntries
+    .filter((e) => e.type === "Income")
+    .reduce((sum, e) => sum + parseFloat(e.amount || "0"), 0);
+
+  const expense = dayEntries
+    .filter((e) => e.type === "Expense")
+    .reduce((sum, e) => sum + parseFloat(e.amount || "0"), 0);
+
+  return { income, expense };
+};
+
   const dateKeys = Object.keys(groupedByDate).sort((a, b) => (a < b ? 1 : -1));
 
   const handleExport = () => {
@@ -363,9 +375,20 @@ export default function HistoryPage() {
         <div className="space-y-4">
           {dateKeys.map((dateKey) => (
             <div key={dateKey} className="bg-gray-800/40 rounded-xl border border-gray-700/50 overflow-hidden">
-              <div className="bg-gray-800/80 px-4 py-2 text-xs font-semibold text-indigo-300 border-b border-gray-700/50">
-                {formatDateHeader(groupedByDate[dateKey][0].created_at)}
-              </div>
+          <div className="bg-gray-800/80 px-4 py-2 border-b border-gray-700/50 flex items-center justify-between gap-3">
+           <div className="text-xs font-semibold text-indigo-300">
+            {formatDateHeader(groupedByDate[dateKey][0].created_at)}
+          </div>
+
+          <div className="flex items-center gap-3 text-[11px] font-semibold whitespace-nowrap">
+         <span className="text-emerald-400">
+            In {currency}{getDayTotals(groupedByDate[dateKey]).income.toFixed(2)}
+          </span>
+          <span className="text-pink-400">
+          Ex {currency}{getDayTotals(groupedByDate[dateKey]).expense.toFixed(2)}
+          </span>
+            </div>
+          </div>
               <div className="divide-y divide-gray-700/50">
                 {groupedByDate[dateKey].map((entry, i) => (
                   <button
