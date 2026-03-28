@@ -48,7 +48,7 @@ export default function LoginPage() {
     });
 
     if (error) setError(error.message);
-    else setMessage("Password reset link sent! Check your email.");
+    else setMessage("Password reset link sent! Check your inbox, spam, or junk folder.");
     setLoading(false);
   };
 
