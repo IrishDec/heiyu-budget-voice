@@ -44,7 +44,7 @@ export default function LoginPage() {
     if (!email) { setError("Please enter your email."); setLoading(false); return; }
     
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/update-password`, // You will need to make this page later if you want them to type a new password
+      redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
     });
 
     if (error) setError(error.message);

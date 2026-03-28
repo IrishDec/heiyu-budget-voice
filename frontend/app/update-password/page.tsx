@@ -1,31 +1,46 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
 export default function UpdatePasswordPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
   const handleUpdate = async () => {
-    if (!password) return;
+    if (!password || !confirmPassword) {
+      setMsg("Error: Please fill in both password fields.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setMsg("Error: Passwords do not match.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setMsg("Error: Password must be at least 6 characters.");
+      return;
+    }
+
     setLoading(true);
     setMsg("");
 
     const { error } = await supabase.auth.updateUser({
-      password: password
+      password: password,
     });
 
     if (error) {
       setMsg("Error: " + error.message);
       setLoading(false);
     } else {
-      setMsg("Success! Password updated.");
+      setMsg("Success! Password updated. Redirecting...");
       setTimeout(() => {
-        router.push("/"); // Send them to dashboard
+        router.push("/");
       }, 1500);
     }
   };
@@ -42,7 +57,9 @@ export default function UpdatePasswordPage() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wide">New Password</label>
+            <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wide">
+              New Password
+            </label>
             <input
               type="password"
               value={password}
@@ -52,8 +69,27 @@ export default function UpdatePasswordPage() {
             />
           </div>
 
+          <div>
+            <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wide">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:border-indigo-500 outline-none"
+              placeholder="••••••••"
+            />
+          </div>
+
           {msg && (
-            <div className={`p-3 text-sm rounded-lg text-center ${msg.includes("Error") ? "bg-red-500/20 text-red-200" : "bg-emerald-500/20 text-emerald-200"}`}>
+            <div
+              className={`p-3 text-sm rounded-lg text-center ${
+                msg.includes("Error")
+                  ? "bg-red-500/20 text-red-200"
+                  : "bg-emerald-500/20 text-emerald-200"
+              }`}
+            >
               {msg}
             </div>
           )}
