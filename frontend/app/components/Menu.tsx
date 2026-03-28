@@ -149,9 +149,6 @@ export default function Menu() {
           <Link href="/categories" onClick={() => setOpen(false)} className="block hover:text-indigo-300">
             🏷️ Categories
           </Link>
-          <Link href="/blog" onClick={() => setOpen(false)} className="block hover:text-indigo-300">
-            📰 Blog
-          </Link>
       <Link 
   href="https://www.heiyudigital.com/contact"
   className="block text-left hover:text-indigo-300"
