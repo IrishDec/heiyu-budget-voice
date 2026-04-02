@@ -16,10 +16,20 @@ type CaptureRow = {
   point_count: number;
   distance_meters: number | null;
   created_at: string;
+  route: {
+    type: "Feature";
+    geometry: {
+      type: "LineString";
+      coordinates: [number, number][];
+    };
+    properties: Record<string, never>;
+  } | null;
 };
 
 const LIVE_SOURCE_ID = "live-capture-route";
 const LIVE_LAYER_ID = "live-capture-route-line";
+const SAVED_SOURCE_ID = "saved-capture-route";
+const SAVED_LAYER_ID = "saved-capture-route-line";
 
 function makeLineFeature(coordinates: [number, number][]) {
   return {
@@ -53,6 +63,21 @@ function haversineMeters(a: [number, number], b: [number, number]) {
   return R * c;
 }
 
+function fitMapToCoordinates(map: mapboxgl.Map, coordinates: [number, number][]) {
+  if (coordinates.length === 0) return;
+
+  const bounds = new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]);
+
+  for (const coordinate of coordinates) {
+    bounds.extend(coordinate);
+  }
+
+  map.fitBounds(bounds, {
+    padding: 50,
+    duration: 800,
+  });
+}
+
 export default function TaxiMap() {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
@@ -66,6 +91,7 @@ export default function TaxiMap() {
   const [captures, setCaptures] = useState<CaptureRow[]>([]);
   const [isLoadingCaptures, setIsLoadingCaptures] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [selectedCaptureId, setSelectedCaptureId] = useState<string | null>(null);
 
   async function loadCaptures() {
     setIsLoadingCaptures(true);
@@ -101,10 +127,47 @@ export default function TaxiMap() {
       }
 
       setCaptures((prev) => prev.filter((capture) => capture.id !== id));
+
+      if (selectedCaptureId === id) {
+        setSelectedCaptureId(null);
+
+        const map = mapInstanceRef.current;
+        if (map) {
+          const savedSource = map.getSource(SAVED_SOURCE_ID) as
+            | mapboxgl.GeoJSONSource
+            | undefined;
+
+          if (savedSource) {
+            savedSource.setData(makeLineFeature([]));
+          }
+        }
+      }
     } catch (error) {
       console.error("Failed to delete capture", error);
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  function showSavedCapture(capture: CaptureRow) {
+    if (!capture.route) return;
+
+    const coordinates = capture.route.geometry.coordinates;
+    const map = mapInstanceRef.current;
+
+    if (!map) return;
+
+    const savedSource = map.getSource(SAVED_SOURCE_ID) as
+      | mapboxgl.GeoJSONSource
+      | undefined;
+
+    if (!savedSource) return;
+
+    savedSource.setData(makeLineFeature(coordinates));
+    setSelectedCaptureId(capture.id);
+
+    if (coordinates.length > 0) {
+      fitMapToCoordinates(map, coordinates);
     }
   }
 
@@ -193,6 +256,26 @@ export default function TaxiMap() {
             "line-opacity": 0.9,
           },
         });
+
+        map.addSource(SAVED_SOURCE_ID, {
+          type: "geojson",
+          data: makeLineFeature([]),
+        });
+
+        map.addLayer({
+          id: SAVED_LAYER_ID,
+          type: "line",
+          source: SAVED_SOURCE_ID,
+          layout: {
+            "line-cap": "round",
+            "line-join": "round",
+          },
+          paint: {
+            "line-color": "#f59e0b",
+            "line-width": 6,
+            "line-opacity": 0.95,
+          },
+        });
       } catch (error) {
         console.error("Failed to load taxi routes", error);
       }
@@ -230,6 +313,18 @@ export default function TaxiMap() {
 
     if (watchIdRef.current !== null) return;
 
+    const map = mapInstanceRef.current;
+    if (map) {
+      const savedSource = map.getSource(SAVED_SOURCE_ID) as
+        | mapboxgl.GeoJSONSource
+        | undefined;
+
+      if (savedSource) {
+        savedSource.setData(makeLineFeature([]));
+      }
+    }
+
+    setSelectedCaptureId(null);
     setGpsError(null);
     setRecordedPoints([]);
     setIsRecording(true);
@@ -372,9 +467,15 @@ export default function TaxiMap() {
             </div>
           ) : (
             captures.map((capture) => (
-              <div
+              <button
                 key={capture.id}
-                className="rounded-xl bg-white/5 px-3 py-3 text-sm"
+                type="button"
+                onClick={() => showSavedCapture(capture)}
+                className={`block w-full rounded-xl px-3 py-3 text-left text-sm ${
+                  selectedCaptureId === capture.id
+                    ? "bg-amber-500/20 ring-1 ring-amber-400/50"
+                    : "bg-white/5"
+                }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -396,14 +497,18 @@ export default function TaxiMap() {
                   </div>
 
                   <button
-                    onClick={() => deleteCapture(capture.id)}
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      deleteCapture(capture.id);
+                    }}
                     disabled={deletingId === capture.id}
                     className="rounded-lg border border-red-400/40 px-3 py-1 text-xs text-red-300 disabled:opacity-50"
                   >
                     {deletingId === capture.id ? "Deleting..." : "Delete"}
                   </button>
                 </div>
-              </div>
+              </button>
             ))
           )}
         </div>
