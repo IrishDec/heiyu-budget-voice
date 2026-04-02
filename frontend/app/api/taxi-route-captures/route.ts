@@ -9,6 +9,19 @@ type SaveBody = {
   distanceMeters?: number;
 };
 
+export async function GET() {
+  const { data, error } = await supabase
+    .from("taxi_route_captures")
+    .select("id, name, point_count, distance_meters, created_at")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data ?? []);
+}
+
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as SaveBody;
