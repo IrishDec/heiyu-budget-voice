@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import mapboxgl from "@/lib/mapbox";
-import { sampleTaxiRoute } from "./routes";
 
 export default function TaxiMap() {
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -20,7 +19,13 @@ export default function TaxiMap() {
       zoom: 15.5,
     });
 
-    mapInstanceRef.current.on("load", () => {
+    mapInstanceRef.current.on("load", async () => {
+      const res = await fetch("/api/taxi-routes");
+      const routes = await res.json();
+      const route = routes[0];
+
+      if (!route) return;
+
       mapInstanceRef.current?.addSource("taxi-shortcut", {
         type: "geojson",
         data: {
@@ -28,7 +33,7 @@ export default function TaxiMap() {
           properties: {},
           geometry: {
             type: "LineString",
-            coordinates: sampleTaxiRoute.coordinates,
+            coordinates: route.coordinates,
           },
         },
       });
