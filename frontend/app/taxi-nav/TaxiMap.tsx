@@ -53,6 +53,27 @@ export default function TaxiMap() {
         },
       });
 
+      const start = route.coordinates[0];
+const end = route.coordinates[route.coordinates.length - 1];
+
+new mapboxgl.Marker({ color: "#22c55e" })
+  .setLngLat(start)
+  .addTo(mapInstanceRef.current!);
+
+new mapboxgl.Marker({ color: "#ef4444" })
+  .setLngLat(end)
+  .addTo(mapInstanceRef.current!);
+
+  new mapboxgl.Marker({ color: "#22c55e" })
+  .setLngLat(start)
+  .setPopup(new mapboxgl.Popup().setText("Start"))
+  .addTo(mapInstanceRef.current!);
+
+new mapboxgl.Marker({ color: "#ef4444" })
+  .setLngLat(end)
+  .setPopup(new mapboxgl.Popup().setText("Destination"))
+  .addTo(mapInstanceRef.current!);
+
       mapInstanceRef.current?.on("click", (e) => {
         console.log("clicked", [e.lngLat.lng, e.lngLat.lat]);
       });
