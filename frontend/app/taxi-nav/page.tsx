@@ -15,14 +15,38 @@ export default function TaxiNavPage() {
         </header>
 
         <section className="flex-1 p-4">
+          <div className="mb-4 grid gap-3">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+              <label className="text-[11px] uppercase tracking-[0.12em] text-white/50">
+                Pickup
+              </label>
+              <input
+                type="text"
+                placeholder="Enter pickup"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-black px-3 py-3 text-base text-white outline-none placeholder:text-white/35"
+              />
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+              <label className="text-[11px] uppercase tracking-[0.12em] text-white/50">
+                Dropoff
+              </label>
+              <input
+                type="text"
+                placeholder="Enter destination"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-black px-3 py-3 text-base text-white outline-none placeholder:text-white/35"
+              />
+            </div>
+          </div>
+
           <div className="mb-4 grid grid-cols-3 gap-2">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
               <p className="text-[11px] uppercase tracking-[0.12em] text-white/50">
                 Heiyu Taxi
               </p>
               <p className="mt-2 text-xl font-semibold text-blue-400">
-  {6 + Math.floor(Math.random() * 2)} min
-</p>
+                {6 + Math.floor(Math.random() * 2)} min
+              </p>
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
@@ -30,8 +54,8 @@ export default function TaxiNavPage() {
                 Standard Car
               </p>
               <p className="mt-2 text-xl font-semibold text-white">
-  {10 + Math.floor(Math.random() * 3)} min
-</p>
+                {10 + Math.floor(Math.random() * 3)} min
+              </p>
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
@@ -50,7 +74,7 @@ export default function TaxiNavPage() {
 
           <div className="mt-4 grid gap-3">
             <button className="rounded-2xl bg-green-500 px-4 py-4 text-base font-medium text-black">
-              Start test
+             Test route
             </button>
 
             <button className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-base font-medium text-white">
