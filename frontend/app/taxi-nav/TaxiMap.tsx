@@ -3,13 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "@/lib/mapbox";
 
-type RouteRow = {
-  id: string;
-  name: string;
-  coordinates: [number, number][];
-  created_at: string;
-};
-
 type CaptureRow = {
   id: string;
   name: string | null;
@@ -84,6 +77,7 @@ export default function TaxiMap() {
   const watchIdRef = useRef<number | null>(null);
   const startedAtRef = useRef<string | null>(null);
   const currentMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const followMeRef = useRef(true);
 
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -95,6 +89,11 @@ export default function TaxiMap() {
   const [selectedCaptureId, setSelectedCaptureId] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [followMe, setFollowMe] = useState(true);
+
+  function setFollowMeState(value: boolean) {
+    followMeRef.current = value;
+    setFollowMe(value);
+  }
 
   async function loadCaptures() {
     setIsLoadingCaptures(true);
@@ -157,7 +156,6 @@ export default function TaxiMap() {
 
     const coordinates = capture.route.geometry.coordinates;
     const map = mapInstanceRef.current;
-
     if (!map) return;
 
     const savedSource = map.getSource(SAVED_SOURCE_ID) as
@@ -168,7 +166,7 @@ export default function TaxiMap() {
 
     savedSource.setData(makeLineFeature(coordinates));
     setSelectedCaptureId(capture.id);
-    setFollowMe(false);
+    setFollowMeState(false);
 
     if (coordinates.length > 0) {
       fitMapToCoordinates(map, coordinates);
@@ -209,7 +207,7 @@ export default function TaxiMap() {
 
     setGpsError(null);
     setIsLocating(true);
-    setFollowMe(true);
+    setFollowMeState(true);
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -246,108 +244,58 @@ export default function TaxiMap() {
     const map = new mapboxgl.Map({
       container: mapRef.current,
       style: "mapbox://styles/mapbox/navigation-day-v1",
-      center: [-6.2592, 53.3461],
-      zoom: 15.5,
+      center: [-6.2603, 53.3498],
+      zoom: 11.5,
     });
 
     mapInstanceRef.current = map;
 
     map.on("dragstart", () => {
-      if (isRecording) {
-        setFollowMe(false);
+      if (watchIdRef.current !== null) {
+        setFollowMeState(false);
       }
     });
 
-    map.on("load", async () => {
-      try {
-        const res = await fetch("/api/taxi-routes");
-        const routes: RouteRow[] = await res.json();
-        const route = routes[0];
+    map.on("load", () => {
+      map.addSource(LIVE_SOURCE_ID, {
+        type: "geojson",
+        data: makeLineFeature([]),
+      });
 
-        if (route) {
-          map.addSource("taxi-shortcut", {
-            type: "geojson",
-            data: {
-              type: "Feature",
-              properties: {},
-              geometry: {
-                type: "LineString",
-                coordinates: route.coordinates,
-              },
-            },
-          });
+      map.addLayer({
+        id: LIVE_LAYER_ID,
+        type: "line",
+        source: LIVE_SOURCE_ID,
+        layout: {
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-color": "#22c55e",
+          "line-width": 6,
+          "line-opacity": 0.9,
+        },
+      });
 
-          map.addLayer({
-            id: "taxi-shortcut-line",
-            type: "line",
-            source: "taxi-shortcut",
-            layout: {
-              "line-cap": "round",
-              "line-join": "round",
-            },
-            paint: {
-              "line-color": "#3b82f6",
-              "line-width": 8,
-              "line-opacity": 0.9,
-            },
-          });
+      map.addSource(SAVED_SOURCE_ID, {
+        type: "geojson",
+        data: makeLineFeature([]),
+      });
 
-          const start = route.coordinates[0];
-          const end = route.coordinates[route.coordinates.length - 1];
-
-          new mapboxgl.Marker({ color: "#22c55e" })
-            .setLngLat(start)
-            .setPopup(new mapboxgl.Popup().setText("Start"))
-            .addTo(map);
-
-          new mapboxgl.Marker({ color: "#ef4444" })
-            .setLngLat(end)
-            .setPopup(new mapboxgl.Popup().setText("Destination"))
-            .addTo(map);
-        }
-
-        map.addSource(LIVE_SOURCE_ID, {
-          type: "geojson",
-          data: makeLineFeature([]),
-        });
-
-        map.addLayer({
-          id: LIVE_LAYER_ID,
-          type: "line",
-          source: LIVE_SOURCE_ID,
-          layout: {
-            "line-cap": "round",
-            "line-join": "round",
-          },
-          paint: {
-            "line-color": "#22c55e",
-            "line-width": 6,
-            "line-opacity": 0.9,
-          },
-        });
-
-        map.addSource(SAVED_SOURCE_ID, {
-          type: "geojson",
-          data: makeLineFeature([]),
-        });
-
-        map.addLayer({
-          id: SAVED_LAYER_ID,
-          type: "line",
-          source: SAVED_SOURCE_ID,
-          layout: {
-            "line-cap": "round",
-            "line-join": "round",
-          },
-          paint: {
-            "line-color": "#f59e0b",
-            "line-width": 6,
-            "line-opacity": 0.95,
-          },
-        });
-      } catch (error) {
-        console.error("Failed to load taxi routes", error);
-      }
+      map.addLayer({
+        id: SAVED_LAYER_ID,
+        type: "line",
+        source: SAVED_SOURCE_ID,
+        layout: {
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-color": "#f59e0b",
+          "line-width": 6,
+          "line-opacity": 0.95,
+        },
+      });
     });
 
     return () => {
@@ -362,7 +310,7 @@ export default function TaxiMap() {
       map.remove();
       mapInstanceRef.current = null;
     };
-  }, [isRecording]);
+  }, []);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -399,7 +347,7 @@ export default function TaxiMap() {
     setSelectedCaptureId(null);
     setGpsError(null);
     setRecordedPoints([]);
-    setFollowMe(true);
+    setFollowMeState(true);
     setIsRecording(true);
     startedAtRef.current = new Date().toISOString();
 
@@ -412,7 +360,7 @@ export default function TaxiMap() {
 
         ensureLiveMarker(point);
 
-        if (followMe) {
+        if (followMeRef.current) {
           centerOnPoint(point, 17);
         }
 
@@ -560,11 +508,10 @@ export default function TaxiMap() {
             </div>
           ) : (
             captures.map((capture) => (
-              <button
+              <div
                 key={capture.id}
-                type="button"
                 onClick={() => showSavedCapture(capture)}
-                className={`block w-full rounded-xl px-3 py-3 text-left text-sm ${
+                className={`rounded-xl px-3 py-3 text-sm cursor-pointer ${
                   selectedCaptureId === capture.id
                     ? "bg-amber-500/20 ring-1 ring-amber-400/50"
                     : "bg-white/5"
@@ -601,7 +548,7 @@ export default function TaxiMap() {
                     {deletingId === capture.id ? "Deleting..." : "Delete"}
                   </button>
                 </div>
-              </button>
+              </div>
             ))
           )}
         </div>
