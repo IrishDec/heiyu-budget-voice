@@ -65,6 +65,7 @@ export default function TaxiMap() {
   const [isSaving, setIsSaving] = useState(false);
   const [captures, setCaptures] = useState<CaptureRow[]>([]);
   const [isLoadingCaptures, setIsLoadingCaptures] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   async function loadCaptures() {
     setIsLoadingCaptures(true);
@@ -82,6 +83,28 @@ export default function TaxiMap() {
       console.error("Failed to load captures", error);
     } finally {
       setIsLoadingCaptures(false);
+    }
+  }
+
+  async function deleteCapture(id: string) {
+    setDeletingId(id);
+
+    try {
+      const res = await fetch(`/api/taxi-route-captures?id=${id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete capture.");
+      }
+
+      setCaptures((prev) => prev.filter((capture) => capture.id !== id));
+    } catch (error) {
+      console.error("Failed to delete capture", error);
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -353,20 +376,32 @@ export default function TaxiMap() {
                 key={capture.id}
                 className="rounded-xl bg-white/5 px-3 py-3 text-sm"
               >
-                <div className="font-medium">
-                  {capture.name || "Unnamed capture"}
-                </div>
-                <div className="mt-1 text-white/70">
-                  Points: {capture.point_count}
-                </div>
-                <div className="text-white/70">
-                  Distance:{" "}
-                  {capture.distance_meters != null
-                    ? `${Math.round(capture.distance_meters)} m`
-                    : "—"}
-                </div>
-                <div className="text-white/50">
-                  {new Date(capture.created_at).toLocaleString()}
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-medium">
+                      {capture.name || "Unnamed capture"}
+                    </div>
+                    <div className="mt-1 text-white/70">
+                      Points: {capture.point_count}
+                    </div>
+                    <div className="text-white/70">
+                      Distance:{" "}
+                      {capture.distance_meters != null
+                        ? `${Math.round(capture.distance_meters)} m`
+                        : "—"}
+                    </div>
+                    <div className="text-white/50">
+                      {new Date(capture.created_at).toLocaleString()}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => deleteCapture(capture.id)}
+                    disabled={deletingId === capture.id}
+                    className="rounded-lg border border-red-400/40 px-3 py-1 text-xs text-red-300 disabled:opacity-50"
+                  >
+                    {deletingId === capture.id ? "Deleting..." : "Delete"}
+                  </button>
                 </div>
               </div>
             ))
