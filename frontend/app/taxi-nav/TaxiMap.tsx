@@ -10,6 +10,14 @@ type RouteRow = {
   created_at: string;
 };
 
+type CaptureRow = {
+  id: string;
+  name: string | null;
+  point_count: number;
+  distance_meters: number | null;
+  created_at: string;
+};
+
 const LIVE_SOURCE_ID = "live-capture-route";
 const LIVE_LAYER_ID = "live-capture-route-line";
 
@@ -55,6 +63,31 @@ export default function TaxiMap() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordedPoints, setRecordedPoints] = useState<[number, number][]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [captures, setCaptures] = useState<CaptureRow[]>([]);
+  const [isLoadingCaptures, setIsLoadingCaptures] = useState(false);
+
+  async function loadCaptures() {
+    setIsLoadingCaptures(true);
+
+    try {
+      const res = await fetch("/api/taxi-route-captures");
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to load captures.");
+      }
+
+      setCaptures(data);
+    } catch (error) {
+      console.error("Failed to load captures", error);
+    } finally {
+      setIsLoadingCaptures(false);
+    }
+  }
+
+  useEffect(() => {
+    loadCaptures();
+  }, []);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -136,10 +169,6 @@ export default function TaxiMap() {
             "line-width": 6,
             "line-opacity": 0.9,
           },
-        });
-
-        map.on("click", (e) => {
-          console.log("clicked", [e.lngLat.lng, e.lngLat.lat]);
         });
       } catch (error) {
         console.error("Failed to load taxi routes", error);
@@ -261,6 +290,8 @@ export default function TaxiMap() {
         throw new Error(result.error || "Failed to save route.");
       }
 
+      await loadCaptures();
+      setRecordedPoints([]);
       console.log("saved route capture", result.capture);
     } catch (error) {
       setGpsError(error instanceof Error ? error.message : "Failed to save route.");
@@ -271,7 +302,9 @@ export default function TaxiMap() {
 
   return (
     <div className="relative h-full w-full">
-      <div ref={mapRef} className="h-full w-full" />
+      <div className="h-[60vh] w-full">
+        <div ref={mapRef} className="h-full w-full" />
+      </div>
 
       <div className="absolute left-3 right-3 top-3 z-10 grid grid-cols-2 gap-2">
         <button
@@ -292,10 +325,54 @@ export default function TaxiMap() {
       </div>
 
       {gpsError ? (
-        <div className="absolute bottom-3 left-3 right-3 z-10 rounded-lg bg-black/70 px-3 py-2 text-sm text-red-300">
+        <div className="absolute bottom-[41vh] left-3 right-3 z-10 rounded-lg bg-black/70 px-3 py-2 text-sm text-red-300">
           {gpsError}
         </div>
       ) : null}
+
+      <div className="bg-slate-950 px-3 py-4 text-white">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold">Saved captures</h2>
+          <button
+            onClick={loadCaptures}
+            disabled={isLoadingCaptures}
+            className="rounded-lg border border-white/20 px-3 py-1 text-xs disabled:opacity-50"
+          >
+            {isLoadingCaptures ? "Loading..." : "Refresh"}
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          {captures.length === 0 ? (
+            <div className="rounded-xl bg-white/5 px-3 py-3 text-sm text-white/70">
+              No saved captures yet
+            </div>
+          ) : (
+            captures.map((capture) => (
+              <div
+                key={capture.id}
+                className="rounded-xl bg-white/5 px-3 py-3 text-sm"
+              >
+                <div className="font-medium">
+                  {capture.name || "Unnamed capture"}
+                </div>
+                <div className="mt-1 text-white/70">
+                  Points: {capture.point_count}
+                </div>
+                <div className="text-white/70">
+                  Distance:{" "}
+                  {capture.distance_meters != null
+                    ? `${Math.round(capture.distance_meters)} m`
+                    : "—"}
+                </div>
+                <div className="text-white/50">
+                  {new Date(capture.created_at).toLocaleString()}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }
