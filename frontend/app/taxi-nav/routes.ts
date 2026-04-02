@@ -1,4 +1,5 @@
-export const sampleTaxiRoute = {
+import type { TaxiRoute } from "./types";
+export const sampleTaxiRoute: TaxiRoute = {
   id: "college-green-demo",
   name: "College Green demo",
   coordinates: [
