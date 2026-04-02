@@ -83,6 +83,7 @@ export default function TaxiMap() {
   const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
   const watchIdRef = useRef<number | null>(null);
   const startedAtRef = useRef<string | null>(null);
+  const currentMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -92,6 +93,8 @@ export default function TaxiMap() {
   const [isLoadingCaptures, setIsLoadingCaptures] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedCaptureId, setSelectedCaptureId] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const [followMe, setFollowMe] = useState(true);
 
   async function loadCaptures() {
     setIsLoadingCaptures(true);
@@ -165,10 +168,70 @@ export default function TaxiMap() {
 
     savedSource.setData(makeLineFeature(coordinates));
     setSelectedCaptureId(capture.id);
+    setFollowMe(false);
 
     if (coordinates.length > 0) {
       fitMapToCoordinates(map, coordinates);
     }
+  }
+
+  function ensureLiveMarker(point: [number, number]) {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (currentMarkerRef.current) {
+      currentMarkerRef.current.setLngLat(point);
+      return;
+    }
+
+    currentMarkerRef.current = new mapboxgl.Marker({ color: "#ffffff" })
+      .setLngLat(point)
+      .setPopup(new mapboxgl.Popup().setText("You are here"))
+      .addTo(map);
+  }
+
+  function centerOnPoint(point: [number, number], zoom = 16.5) {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    map.easeTo({
+      center: point,
+      zoom,
+      duration: 700,
+    });
+  }
+
+  function locateMe() {
+    if (!navigator.geolocation) {
+      setGpsError("Geolocation is not supported on this device.");
+      return;
+    }
+
+    setGpsError(null);
+    setIsLocating(true);
+    setFollowMe(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const point: [number, number] = [
+          position.coords.longitude,
+          position.coords.latitude,
+        ];
+
+        ensureLiveMarker(point);
+        centerOnPoint(point);
+        setIsLocating(false);
+      },
+      (error) => {
+        setGpsError(error.message || "Unable to get current location.");
+        setIsLocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 10000,
+      }
+    );
   }
 
   useEffect(() => {
@@ -188,6 +251,12 @@ export default function TaxiMap() {
     });
 
     mapInstanceRef.current = map;
+
+    map.on("dragstart", () => {
+      if (isRecording) {
+        setFollowMe(false);
+      }
+    });
 
     map.on("load", async () => {
       try {
@@ -287,10 +356,13 @@ export default function TaxiMap() {
         watchIdRef.current = null;
       }
 
+      currentMarkerRef.current?.remove();
+      currentMarkerRef.current = null;
+
       map.remove();
       mapInstanceRef.current = null;
     };
-  }, []);
+  }, [isRecording]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -327,6 +399,7 @@ export default function TaxiMap() {
     setSelectedCaptureId(null);
     setGpsError(null);
     setRecordedPoints([]);
+    setFollowMe(true);
     setIsRecording(true);
     startedAtRef.current = new Date().toISOString();
 
@@ -336,6 +409,12 @@ export default function TaxiMap() {
           position.coords.longitude,
           position.coords.latitude,
         ];
+
+        ensureLiveMarker(point);
+
+        if (followMe) {
+          centerOnPoint(point, 17);
+        }
 
         setRecordedPoints((prev) => {
           const last = prev[prev.length - 1];
@@ -424,7 +503,7 @@ export default function TaxiMap() {
         <div ref={mapRef} className="h-full w-full" />
       </div>
 
-      <div className="absolute left-3 right-3 top-3 z-10 grid grid-cols-2 gap-2">
+      <div className="absolute left-3 right-3 top-3 z-10 grid grid-cols-3 gap-2">
         <button
           onClick={startRecording}
           disabled={isRecording || isSaving}
@@ -440,7 +519,21 @@ export default function TaxiMap() {
         >
           {isSaving ? "Saving..." : "Stop"}
         </button>
+
+        <button
+          onClick={locateMe}
+          disabled={isLocating}
+          className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-black disabled:opacity-50"
+        >
+          {isLocating ? "Locating..." : "My Location"}
+        </button>
       </div>
+
+      {isRecording ? (
+        <div className="absolute right-3 top-20 z-10 rounded-lg bg-black/70 px-3 py-2 text-xs text-white">
+          {followMe ? "Following you" : "Follow paused"}
+        </div>
+      ) : null}
 
       {gpsError ? (
         <div className="absolute bottom-[41vh] left-3 right-3 z-10 rounded-lg bg-black/70 px-3 py-2 text-sm text-red-300">
