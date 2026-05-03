@@ -149,6 +149,11 @@ export default function Menu() {
           <Link href="/categories" onClick={() => setOpen(false)} className="block hover:text-indigo-300">
             🏷️ Categories
           </Link>
+           
+            <Link href="/landing" onClick={() => setOpen(false)} className="block hover:text-indigo-300">
+    ℹ️ About
+  </Link>
+
       <Link 
   href="https://www.heiyudigital.com/contact"
   className="block text-left hover:text-indigo-300"
@@ -183,7 +188,6 @@ export default function Menu() {
           <Link href="/legal/privacy" onClick={() => setOpen(false)}>Privacy Policy</Link>
           <Link href="/legal/terms" onClick={() => setOpen(false)}>Terms of Service</Link>
           <Link href="/legal/cookies" onClick={() => setOpen(false)}>Cookie Policy</Link>
-           <Link href="/taxi-nav" onClick={() => setOpen(false)} className="opacity-30 text-[10px]" > Driver Tools </Link>
           <p className="mt-2 opacity-50 text-[10px]">© {new Date().getFullYear()} Heiyu Budget</p>
         </div>
 

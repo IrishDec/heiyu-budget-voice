@@ -12,7 +12,7 @@ type SaveBody = {
 export async function GET() {
   const { data, error } = await supabase
     .from("taxi_route_captures")
-    .select("id, name, point_count, distance_meters, created_at")
+ .select("id, name, point_count, distance_meters, created_at, route")
     .order("created_at", { ascending: false });
 
   if (error) {
